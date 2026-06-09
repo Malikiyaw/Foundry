@@ -5,6 +5,7 @@ import { store, AppDispatch, RootState } from './store/index';
 import { fetchMe } from './store/authSlice';
 import { connectSocket } from './services/socket';
 import { LoginPage, RegisterPage } from './components/Auth';
+import Landing from './components/Landing';
 import ProjectList from './components/ProjectList';
 import WorkspaceLayout from './components/WorkspaceLayout';
 import KeyManager from './components/KeyManager';
@@ -42,14 +43,14 @@ function AppRoutes() {
     <BrowserRouter>
       <AppInit>
         <Routes>
+          <Route path="/" element={<Landing />} />
           <Route path="/login" element={<AuthGuard><LoginPage /></AuthGuard>} />
           <Route path="/register" element={<AuthGuard><RegisterPage /></AuthGuard>} />
           <Route path="/projects" element={<ProtectedRoute><ProjectList /></ProtectedRoute>} />
           <Route path="/workspace/:id" element={<ProtectedRoute><WorkspaceLayout /></ProtectedRoute>} />
           <Route path="/keys" element={<ProtectedRoute><KeyManager /></ProtectedRoute>} />
           <Route path="/gallery" element={<Gallery />} />
-          <Route path="/" element={<Navigate to="/projects" replace />} />
-          <Route path="*" element={<Navigate to="/projects" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppInit>
     </BrowserRouter>

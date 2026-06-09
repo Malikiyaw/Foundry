@@ -1,53 +1,22 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useSocket } from '../../services/socket';
+import React, { useState } from 'react';
 
 interface Props { projectId: string }
 
 export default function Terminal({ projectId }: Props) {
-  const terminalRef = useRef<HTMLDivElement>(null);
-  const xtermRef = useRef<any>(null);
-  const [initialized, setInitialized] = useState(false);
-  const [cmdInput, setCmdInput] = useState('');
   const [output, setOutput] = useState<string[]>([
     'Foundry Terminal v1.0',
     `Project: ${projectId}`,
-    'Ready. Type commands or use AI generation.',
     '---',
   ]);
+  const [cmdInput, setCmdInput] = useState('');
 
   const COMMANDS: Record<string, (args: string[]) => string[]> = {
-    help: () => [
-      'Available commands:',
-      '  help              - Show this help',
-      '  clear             - Clear terminal',
-      '  generate <desc>   - Generate game with AI',
-      '  status            - Show project status',
-      '  build             - Build current game',
-      '  deploy [service]  - Deploy game (itchio, foundry)',
-    ],
+    help: () => ['Commands: help, clear, generate, status, build, deploy'],
     clear: () => { setOutput(['']); return []; },
-    status: () => [
-      `Project: ${projectId}`,
-      'Files: counting...',
-      'Status: Active',
-      'Last build: N/A',
-    ],
-    generate: (args) => {
-      const desc = args.join(' ');
-      if (!desc) return ['Usage: generate <description>'];
-      return [`Queuing AI generation: "${desc}"...`, 'Generation started. Check AI Chat for progress.'];
-    },
-    build: () => [
-      'Building project...',
-      '✓ HTML validated',
-      '✓ CSS compiled',
-      '✓ JavaScript bundled',
-      'Build complete.',
-    ],
-    deploy: (args) => {
-      const target = args[0] || 'foundry';
-      return [`Deploying to ${target}...`, 'You can manage deployments from the Deploy menu.'];
-    },
+    status: () => [`Project: ${projectId}`, 'Status: Active'],
+    generate: (args) => args.length ? [`Queuing AI generation: "${args.join(' ')}"...`] : ['Usage: generate <description>'],
+    build: () => ['Building...', '✓ Build complete.'],
+    deploy: (args) => [`Deploying to ${args[0] || 'foundry'}...`],
   };
 
   const handleCommand = (cmd: string) => {
@@ -55,40 +24,34 @@ export default function Terminal({ projectId }: Props) {
     if (!trimmed) return;
     const parts = trimmed.split(/\s+/);
     const command = parts[0].toLowerCase();
-    const args = parts.slice(1);
-
     setOutput((prev) => [...prev, `$ ${trimmed}`]);
-
     if (COMMANDS[command]) {
-      const result = COMMANDS[command](args);
+      const result = COMMANDS[command](parts.slice(1));
       if (result.length > 0) setOutput((prev) => [...prev, ...result]);
     } else {
-      setOutput((prev) => [...prev, `Command not found: ${command}. Type 'help' for available commands.`]);
+      setOutput((prev) => [...prev, `Unknown command: ${command}. Type 'help'.`]);
     }
     setCmdInput('');
   };
 
   return (
-    <div className="flex h-full flex-col bg-[#1e1e1e]">
-      <div className="flex-1 overflow-y-auto p-2 font-mono text-xs leading-relaxed" ref={terminalRef}>
-        {output.map((line, i) => {
-          if (line.startsWith('$ ')) {
-            return <div key={i} className="text-green-400">$ <span className="text-white">{line.slice(2)}</span></div>;
-          }
-          return <div key={i} className="text-[#cccccc]">{line}</div>;
-        })}
-
-        <div className="flex items-center text-green-400">
+    <div className="flex h-full flex-col" style={{ background: 'var(--bg-primary)' }}>
+      <div className="flex-1 overflow-y-auto p-3 font-mono text-xs leading-relaxed">
+        {output.map((line, i) => (
+          <div key={i} style={{ color: line.startsWith('$ ') ? 'var(--accent-green)' : 'var(--text-secondary)' }}>
+            {line.startsWith('$ ') ? <><span style={{ color: 'var(--accent)' }}>$ </span>{line.slice(2)}</> : line}
+          </div>
+        ))}
+        <div className="flex items-center" style={{ color: 'var(--accent)' }}>
           <span>$ </span>
           <input
             autoFocus
-            className="flex-1 bg-transparent border-none outline-none text-white font-mono text-xs ml-1"
+            className="flex-1 bg-transparent border-none outline-none font-mono text-xs ml-1"
+            style={{ color: 'var(--text-primary)' }}
             value={cmdInput}
             onChange={(e) => setCmdInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleCommand(cmdInput);
-            }}
-            placeholder="Type a command or 'help'..."
+            onKeyDown={(e) => { if (e.key === 'Enter') handleCommand(cmdInput); }}
+            placeholder="Type a command..."
           />
         </div>
       </div>

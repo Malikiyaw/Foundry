@@ -1,15 +1,115 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppDispatch, RootState } from '../store/index';
-import { login, register } from '../store/authSlice';
+import { login, register, clearError } from '../store/authSlice';
+
+function FloatingCode() {
+  const snippets = [
+    'const game = new Phaser.Game({',
+    '  type: Phaser.AUTO,',
+    '  scene: [BootScene, GameScene]',
+    '});',
+    '',
+    'function create() {',
+    '  this.player = this.physics.add.sprite(',
+    '    100, 200, "dino"',
+    '  );',
+    '  this.cursors = this.input.keyboard.',
+    '    createCursorKeys();',
+    '}',
+    '',
+    'function update() {',
+    '  if (this.cursors.right.isDown) {',
+    '    this.player.setVelocityX(200);',
+    '  }',
+    '}',
+  ];
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-[0.07]">
+      {snippets.map((line, i) => (
+        <div
+          key={i}
+          className="whitespace-nowrap font-mono text-xs text-white"
+          style={{
+            transform: `translateY(${20 + i * 28}px) translateX(${10 + (i % 3) * 30}px)`,
+            animationDelay: `${i * 0.15}s`,
+          }}
+        >
+          {line}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AuthLayout({ children, mode }: { children: React.ReactNode; mode: 'login' | 'register' }) {
+  return (
+    <div className="flex min-h-screen">
+      <div className="relative hidden w-[55%] lg:flex items-center justify-center overflow-hidden bg-mesh" style={{ background: 'linear-gradient(135deg, #0a0a1a 0%, #0f0f2a 50%, #0a0a1a 100%)' }}>
+        <FloatingCode />
+        <div className="relative z-10 max-w-lg px-12">
+          <div className="mb-6 flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl" style={{ background: 'var(--gradient-1)' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+            </div>
+            <span className="text-2xl font-bold text-white">Foundry</span>
+          </div>
+          <h1 className="mb-4 text-4xl font-bold leading-tight text-white">
+            Build games with
+            <span className="block text-gradient">AI superpowers</span>
+          </h1>
+          <p className="mb-8 text-lg text-[var(--text-secondary)] leading-relaxed">
+            The open-source, BYOK game generator. Bring your own API keys,
+            own your data, and ship games in minutes — not months.
+          </p>
+          <div className="space-y-3">
+            {[
+              { icon: '⚡', text: 'Multi-agent AI orchestration' },
+              { icon: '🎨', text: 'Live preview with hot reload' },
+              { icon: '🔐', text: 'Your keys, your costs, your data' },
+              { icon: '🚀', text: 'One-click deploy to the web' },
+            ].map((item) => (
+              <div key={item.text} className="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
+                <span className="text-base">{item.icon}</span>
+                <span>{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0a0a1a] to-transparent" />
+      </div>
+
+      <div className="flex w-full lg:w-[45%] items-center justify-center p-8 bg-[var(--bg-primary)]">
+        <div className="w-full max-w-[400px] animate-fadeIn">
+          <div className="mb-8 lg:hidden">
+            <div className="mb-4 flex items-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'var(--gradient-1)' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+              </div>
+              <span className="text-xl font-bold text-white">Foundry</span>
+            </div>
+          </div>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function LoginPage() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { loading, error } = useSelector((s: RootState) => s.auth);
+  const { loading, error, backendOnline } = useSelector((s: RootState) => s.auth);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => { dispatch(clearError()); }, [dispatch]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,54 +117,121 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#1e1e1e] p-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#0078d4] to-[#1e8ae6]">
-            <span className="text-xl font-bold text-white">F</span>
-          </div>
-          <h1 className="text-xl font-bold text-white">Welcome to Foundry</h1>
-          <p className="mt-1 text-sm text-[#858585]">Sign in to start building games</p>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs text-[#858585] mb-1">Email</label>
-            <input className="w-full rounded border border-[#3c3c3c] bg-[#3c3c3c] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4] placeholder-[#858585]" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </div>
-          <div>
-            <label className="block text-xs text-[#858585] mb-1">Password</label>
-            <input className="w-full rounded border border-[#3c3c3c] bg-[#3c3c3c] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4] placeholder-[#858585]" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
-          </div>
-          {error && <p className="text-xs text-red-400">{error}</p>}
-          <button type="submit" disabled={loading} className="w-full rounded bg-[#0078d4] py-2 text-sm font-medium text-white hover:bg-[#1e8ae6] disabled:opacity-50 transition-colors">
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-[#3c3c3c]" /></div>
-          <div className="relative flex justify-center"><span className="bg-[#1e1e1e] px-2 text-xs text-[#858585]">or continue with</span></div>
-        </div>
-        <button className="w-full rounded border border-[#3c3c3c] bg-[#252526] py-2 text-sm text-[#cccccc] hover:bg-[#3c3c3c] transition-colors" onClick={() => window.location.href = '/api/auth/google'}>
-          Sign in with Google
-        </button>
-        <p className="mt-6 text-center text-xs text-[#858585]">
-          Don't have an account? <Link to="/register" className="text-blue-400 hover:underline">Sign up</Link>
-        </p>
-        <p className="mt-2 text-center text-[10px] text-[#858585]">
-          Demo: demo@foundry.gg / password123
-        </p>
+    <AuthLayout mode="login">
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-white mb-1">Welcome back</h2>
+        <p className="text-sm text-[var(--text-secondary)]">Sign in to continue building games</p>
       </div>
-    </div>
+
+      {!backendOnline && (
+        <div className="mb-6 rounded-lg border p-4 animate-slideUp" style={{ background: 'var(--danger-subtle)', borderColor: 'rgba(255,107,107,0.2)' }}>
+          <div className="flex items-start gap-3">
+            <span className="text-lg mt-0.5">🔌</span>
+            <div>
+              <p className="text-sm font-medium text-[var(--danger)]">Backend not connected</p>
+              <p className="text-xs text-[var(--text-secondary)] mt-1">
+                The backend server is not deployed yet. Deploy it at{' '}
+                <code className="rounded px-1 py-0.5 text-[10px]" style={{ background: 'var(--bg-tertiary)' }}>backend/</code>{' '}
+                to enable authentication.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Email</label>
+          <input
+            className="input-field"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+          />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Password</label>
+          <div className="relative">
+            <input
+              className="input-field pr-10"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {error && (
+          <div className="flex items-center gap-2 rounded-lg p-3 text-sm animate-slideUp" style={{ background: 'var(--danger-subtle)', color: 'var(--danger)' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+            {error}
+          </div>
+        )}
+
+        <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
+          {loading ? (
+            <>
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Signing in...
+            </>
+          ) : 'Sign In'}
+        </button>
+      </form>
+
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center"><div className="w-full border-t" style={{ borderColor: 'var(--border-primary)' }} /></div>
+        <div className="relative flex justify-center"><span className="px-3 text-xs" style={{ background: 'var(--bg-primary)', color: 'var(--text-muted)' }}>or</span></div>
+      </div>
+
+      <button
+        className="btn-ghost w-full flex items-center justify-center gap-2"
+        onClick={() => {
+          if (!backendOnline) return;
+          window.location.href = '/api/auth/google';
+        }}
+        disabled={!backendOnline}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+
+      <p className="mt-8 text-center text-sm text-[var(--text-secondary)]">
+        {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+        <Link to={mode === 'login' ? '/register' : '/login'} className="font-medium text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors">
+          {mode === 'login' ? 'Create one' : 'Sign in'}
+        </Link>
+      </p>
+    </AuthLayout>
   );
 }
 
 export function RegisterPage() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { loading, error } = useSelector((s: RootState) => s.auth);
+  const { loading, error, backendOnline } = useSelector((s: RootState) => s.auth);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => { dispatch(clearError()); }, [dispatch]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,37 +239,85 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#1e1e1e] p-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#0078d4] to-[#1e8ae6]">
-            <span className="text-xl font-bold text-white">F</span>
-          </div>
-          <h1 className="text-xl font-bold text-white">Create Account</h1>
-          <p className="mt-1 text-sm text-[#858585]">Start building games with AI</p>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs text-[#858585] mb-1">Name</label>
-            <input className="w-full rounded border border-[#3c3c3c] bg-[#3c3c3c] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4] placeholder-[#858585]" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} required />
-          </div>
-          <div>
-            <label className="block text-xs text-[#858585] mb-1">Email</label>
-            <input className="w-full rounded border border-[#3c3c3c] bg-[#3c3c3c] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4] placeholder-[#858585]" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </div>
-          <div>
-            <label className="block text-xs text-[#858585] mb-1">Password</label>
-            <input className="w-full rounded border border-[#3c3c3c] bg-[#3c3c3c] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4] placeholder-[#858585]" type="password" placeholder="At least 6 characters" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} required />
-          </div>
-          {error && <p className="text-xs text-red-400">{error}</p>}
-          <button type="submit" disabled={loading} className="w-full rounded bg-[#0078d4] py-2 text-sm font-medium text-white hover:bg-[#1e8ae6] disabled:opacity-50 transition-colors">
-            {loading ? 'Creating account...' : 'Create Account'}
-          </button>
-        </form>
-        <p className="mt-6 text-center text-xs text-[#858585]">
-          Already have an account? <Link to="/login" className="text-blue-400 hover:underline">Sign in</Link>
-        </p>
+    <AuthLayout mode="register">
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-white mb-1">Create your account</h2>
+        <p className="text-sm text-[var(--text-secondary)]">Start building games with AI in minutes</p>
       </div>
-    </div>
+
+      {!backendOnline && (
+        <div className="mb-6 rounded-lg border p-4 animate-slideUp" style={{ background: 'var(--danger-subtle)', borderColor: 'rgba(255,107,107,0.2)' }}>
+          <div className="flex items-start gap-3">
+            <span className="text-lg mt-0.5">🔌</span>
+            <div>
+              <p className="text-sm font-medium text-[var(--danger)]">Backend not connected</p>
+              <p className="text-xs text-[var(--text-secondary)] mt-1">
+                The backend server is not deployed yet. Deploy it to enable account creation.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Full Name</label>
+          <input className="input-field" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Email</label>
+          <input className="input-field" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Password</label>
+          <div className="relative">
+            <input
+              className="input-field pr-10"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="At least 6 characters"
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {error && (
+          <div className="flex items-center gap-2 rounded-lg p-3 text-sm animate-slideUp" style={{ background: 'var(--danger-subtle)', color: 'var(--danger)' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+            {error}
+          </div>
+        )}
+
+        <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
+          {loading ? (
+            <>
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Creating account...
+            </>
+          ) : 'Create Account'}
+        </button>
+      </form>
+
+      <p className="mt-8 text-center text-sm text-[var(--text-secondary)]">
+        Already have an account?{' '}
+        <Link to="/login" className="font-medium text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors">
+          Sign in
+        </Link>
+      </p>
+    </AuthLayout>
   );
 }

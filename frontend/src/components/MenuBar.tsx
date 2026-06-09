@@ -8,27 +8,24 @@ interface Props { projectId: string }
 
 const MENUS = [
   {
-    label: 'File', icon: '📁',
+    label: 'File',
     items: [
       { label: 'New Project', shortcut: 'Ctrl+N', action: (n: any) => n('/projects') },
-      { label: 'Open Project', shortcut: 'Ctrl+O', action: (n: any) => n('/projects') },
       { label: 'Save All', shortcut: 'Ctrl+S', action: () => {} },
-      { label: 'Export as ZIP', shortcut: '', action: (n: any, pid: string) => window.open(`/api/projects/${pid}/export`) },
-      { label: 'Publish to itch.io', shortcut: '', action: () => {} },
-      { label: 'Deploy to Foundry', shortcut: '', action: () => {} },
+      { label: 'Export ZIP', shortcut: '', action: (n: any, pid: string) => window.open(`/api/projects/${pid}/export`) },
+      { label: 'Deploy to itch.io', shortcut: '', action: () => {} },
     ],
   },
   {
-    label: 'Edit', icon: '✏️',
+    label: 'Edit',
     items: [
       { label: 'Undo', shortcut: 'Ctrl+Z', action: () => {} },
       { label: 'Redo', shortcut: 'Ctrl+Shift+Z', action: () => {} },
       { label: 'Find', shortcut: 'Ctrl+F', action: () => {} },
-      { label: 'Replace', shortcut: 'Ctrl+H', action: () => {} },
     ],
   },
   {
-    label: 'View', icon: '👁',
+    label: 'View',
     items: [
       { label: 'Toggle Sidebar', shortcut: 'Ctrl+B', action: (d: any) => d(toggleSidebar()) },
       { label: 'Toggle Panel', shortcut: 'Ctrl+J', action: (d: any) => d(toggleBottomPanel()) },
@@ -37,25 +34,16 @@ const MENUS = [
     ],
   },
   {
-    label: 'Run', icon: '▶',
+    label: 'Run',
     items: [
       { label: 'Generate Game', shortcut: 'Ctrl+Enter', action: () => {} },
-      { label: 'Regenerate File', shortcut: '', action: () => {} },
       { label: 'Run Playtest', shortcut: '', action: () => {} },
     ],
   },
   {
-    label: 'Deploy', icon: '🚀',
+    label: 'Help',
     items: [
-      { label: 'Deploy Subdomain', shortcut: '', action: () => {} },
-      { label: 'Custom Domain', shortcut: '', action: () => {} },
-    ],
-  },
-  {
-    label: 'Help', icon: '❓',
-    items: [
-      { label: 'API Key Management', shortcut: '', action: (n: any) => n('/keys') },
-      { label: 'Keyboard Shortcuts', shortcut: 'Ctrl+K Ctrl+S', action: () => {} },
+      { label: 'API Keys', shortcut: '', action: (n: any) => n('/keys') },
       { label: 'About Foundry', shortcut: '', action: () => {} },
     ],
   },
@@ -75,42 +63,45 @@ export default function MenuBar({ projectId }: Props) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleAction = (action: Function) => {
-    action(dispatch, navigate, projectId);
-    setOpenMenu(null);
-  };
-
   return (
-    <div ref={ref} className="flex h-[30px] items-center border-b border-[#3c3c3c] bg-[#323233] px-1 select-none shrink-0">
-      <div className="flex items-center gap-1.5 mr-3 px-2">
-        <div className="flex h-5 w-5 items-center justify-center rounded bg-gradient-to-br from-[#0078d4] to-[#1e8ae6]">
-          <span className="text-[10px] font-bold text-white">F</span>
+    <div ref={ref} className="flex h-[32px] items-center border-b glass shrink-0" style={{ borderColor: 'var(--border-primary)' }}>
+      <div className="flex items-center gap-2 px-3 mr-1">
+        <div className="flex h-6 w-6 items-center justify-center rounded-md" style={{ background: 'var(--gradient-1)' }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
         </div>
       </div>
+
       {MENUS.map((menu) => (
         <div key={menu.label} className="relative">
           <button
-            className={`flex items-center gap-1 px-2.5 py-0.5 text-xs rounded transition-colors ${
-              openMenu === menu.label
-                ? 'bg-[#094771] text-white'
-                : 'text-[#cccccc] hover:bg-[#3c3c3c]'
-            }`}
+            className="px-3 py-1 text-xs rounded-md transition-all"
+            style={{
+              background: openMenu === menu.label ? 'var(--accent-subtle)' : 'transparent',
+              color: openMenu === menu.label ? 'var(--accent)' : 'var(--text-secondary)',
+            }}
             onClick={() => setOpenMenu(openMenu === menu.label ? null : menu.label)}
+            onMouseEnter={() => openMenu && setOpenMenu(menu.label)}
           >
-            <span className="text-[10px]">{menu.icon}</span>
-            <span>{menu.label}</span>
+            {menu.label}
           </button>
           {openMenu === menu.label && (
-            <div className="absolute left-0 top-full z-50 min-w-[220px] rounded border border-[#3c3c3c] bg-[#252526] py-1 shadow-2xl animate-scaleIn origin-top-left">
+            <div className="absolute left-0 top-full z-50 min-w-[220px] py-1.5 animate-scaleIn glass rounded-lg shadow-2xl" style={{ border: '1px solid var(--border-primary)' }}>
               {menu.items.map((item, i) => (
                 <button
                   key={i}
-                  className="flex w-full items-center justify-between px-4 py-1.5 text-xs text-[#cccccc] hover:bg-[#094771] transition-colors"
-                  onClick={() => handleAction(item.action)}
+                  className="flex w-full items-center justify-between px-4 py-2 text-xs transition-colors"
+                  style={{ color: 'var(--text-primary)' }}
+                  onClick={() => { item.action(dispatch, navigate, projectId); setOpenMenu(null); }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                 >
                   <span>{item.label}</span>
                   {item.shortcut && (
-                    <span className="ml-8 text-[10px] text-[#858585]">{item.shortcut}</span>
+                    <span className="ml-6 text-[10px] px-1.5 py-0.5 rounded" style={{ color: 'var(--text-muted)', background: 'var(--bg-tertiary)' }}>
+                      {item.shortcut}
+                    </span>
                   )}
                 </button>
               ))}
@@ -118,8 +109,9 @@ export default function MenuBar({ projectId }: Props) {
           )}
         </div>
       ))}
+
       <div className="flex-1" />
-      <span className="text-[10px] text-[#858585] px-2">Foundry v1.0</span>
+      <span className="text-[10px] px-3" style={{ color: 'var(--text-muted)' }}>Foundry v1.0</span>
     </div>
   );
 }

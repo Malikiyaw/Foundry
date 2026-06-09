@@ -25,7 +25,7 @@ export default function Editor({ projectId }: Props) {
   };
 
   return (
-    <div className="flex h-full flex-col bg-[#1e1e1e]">
+    <div className="flex h-full flex-col" style={{ background: 'var(--bg-primary)' }}>
       <TabBar
         tabs={openTabs}
         activeIndex={activeTabIndex}

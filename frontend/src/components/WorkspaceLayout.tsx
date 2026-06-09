@@ -17,16 +17,22 @@ import BottomPanel from './BottomPanel/BottomPanel';
 
 function ResizeHandle({ className = '' }: { className?: string }) {
   return (
-    <Separator className={`group relative w-[4px] bg-transparent hover:bg-[#0078d4]/30 transition-colors cursor-col-resize ${className}`}>
-      <div className="absolute inset-y-0 left-[-2px] right-[-2px]" />
+    <Separator className={`group relative w-[5px] cursor-col-resize transition-colors ${className}`}
+      style={{ background: 'transparent' }}
+    >
+      <div className="absolute inset-y-0 left-[-1px] right-[-1px] group-hover:bg-[var(--accent)]/20 transition-colors" />
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-[3px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'var(--accent)' }} />
     </Separator>
   );
 }
 
 function HorizontalResizeHandle() {
   return (
-    <Separator className="group relative h-[4px] bg-transparent hover:bg-[#0078d4]/30 transition-colors cursor-row-resize">
-      <div className="absolute inset-x-0 top-[-2px] bottom-[-2px]" />
+    <Separator className="group relative h-[5px] cursor-row-resize transition-colors"
+      style={{ background: 'transparent' }}
+    >
+      <div className="absolute inset-x-0 top-[-1px] bottom-[-1px] group-hover:bg-[var(--accent)]/20 transition-colors" />
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-[3px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'var(--accent)' }} />
     </Separator>
   );
 }
@@ -68,7 +74,7 @@ export default function WorkspaceLayout() {
   if (!id) return null;
 
   return (
-    <div className="flex h-screen flex-col bg-[#1e1e1e] select-none" onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
+    <div className="flex h-screen flex-col select-none" style={{ background: 'var(--bg-primary)' }} onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
       <MenuBar projectId={id} />
 
       <div className="flex flex-1 overflow-hidden">
