@@ -1,131 +1,74 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '../services/api';
-import { ProjectFile } from '../types/index';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 
-interface FilesState {
-  items: ProjectFile[];
-  loading: boolean;
-  error: string | null;
-}
+interface FileItem { id: string; path: string; content: string; isGenerated: boolean; fileType: string; createdAt: string; updatedAt: string; }
+interface FilesState { items: FileItem[]; loading: boolean; error: string | null; diffs: any[] | null; }
 
-const initialState: FilesState = {
-  items: [],
-  loading: false,
-  error: null,
-};
+const initialState: FilesState = { items: [], loading: false, error: null, diffs: null };
 
 export const fetchFiles = createAsyncThunk('files/fetchAll', async (projectId: string, { rejectWithValue }) => {
   try {
-    const { data } = await api.get(`/projects/${projectId}/files`);
-    return data;
-  } catch (err: any) {
-    return rejectWithValue(err.response?.data?.error || 'Failed to fetch files');
-  }
+    const token = localStorage.getItem('foundry_token');
+    const res = await fetch(`/api/projects/${projectId}/files`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return rejectWithValue('Failed');
+    return await res.json();
+  } catch (e: any) { return rejectWithValue(e.message); }
 });
 
-export const createFile = createAsyncThunk(
-  'files/create',
-  async ({ projectId, ...file }: { projectId: string; path: string; content?: string; fileType?: string }, { rejectWithValue }) => {
-    try {
-      const { data } = await api.post(`/projects/${projectId}/files`, file);
-      return data;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.error || 'Failed to create file');
-    }
-  }
-);
+export const createFile = createAsyncThunk('files/create', async ({ projectId, path }: { projectId: string; path: string }, { rejectWithValue }) => {
+  try {
+    const token = localStorage.getItem('foundry_token');
+    const res = await fetch(`/api/projects/${projectId}/files`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ path, content: '', fileType: 'code' }),
+    });
+    if (!res.ok) return rejectWithValue('Failed');
+    return await res.json();
+  } catch (e: any) { return rejectWithValue(e.message); }
+});
 
-export const updateFile = createAsyncThunk(
-  'files/update',
-  async ({ projectId, fileId, content }: { projectId: string; fileId: string; content: string }, { rejectWithValue }) => {
-    try {
-      const { data } = await api.put(`/projects/${projectId}/files/${fileId}`, { content });
-      return data;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.error || 'Failed to update file');
-    }
-  }
-);
+export const updateFileContent = createAsyncThunk('files/updateContent', async ({ fileId, content }: { fileId: string; content: string }, { rejectWithValue }) => {
+  try {
+    const token = localStorage.getItem('foundry_token');
+    const res = await fetch(`/api/files/${fileId}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ content }),
+    });
+    if (!res.ok) return rejectWithValue('Failed');
+    return { fileId, content };
+  } catch (e: any) { return rejectWithValue(e.message); }
+});
 
-export const deleteFile = createAsyncThunk(
-  'files/delete',
-  async ({ projectId, fileId }: { projectId: string; fileId: string }, { rejectWithValue }) => {
-    try {
-      await api.delete(`/projects/${projectId}/files/${fileId}`);
-      return fileId;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.error || 'Failed to delete file');
-    }
-  }
-);
-
-export const batchUpdateFiles = createAsyncThunk(
-  'files/batchUpdate',
-  async ({ projectId, files }: { projectId: string; files: { path: string; content: string; fileType?: string; isGenerated?: boolean }[] }, { rejectWithValue }) => {
-    try {
-      const { data } = await api.post(`/projects/${projectId}/files/batch`, { files });
-      return data;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.error || 'Failed to batch update files');
-    }
-  }
-);
+export const deleteFile = createAsyncThunk('files/delete', async ({ projectId, fileId }: { projectId: string; fileId: string }, { rejectWithValue }) => {
+  try {
+    const token = localStorage.getItem('foundry_token');
+    const res = await fetch(`/api/files/${fileId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return rejectWithValue('Failed');
+    return fileId;
+  } catch (e: any) { return rejectWithValue(e.message); }
+});
 
 const filesSlice = createSlice({
-  name: 'files',
-  initialState,
+  name: 'files', initialState,
   reducers: {
-    clearFiles(state) {
-      state.items = [];
+    clearFiles(state) { state.items = []; state.diffs = null; },
+    setDiffs(state, action) { state.diffs = action.payload; },
+    updateFileContent(state, action: PayloadAction<{ fileId: string; content: string }>) {
+      const f = state.items.find((i) => i.id === action.payload.fileId);
+      if (f) f.content = action.payload.content;
     },
-    updateFileContent(state, action) {
-      const { fileId, content } = action.payload;
-      const file = state.items.find((f) => f.id === fileId);
-      if (file) {
-        file.content = content;
-      }
-    },
-    updateFileByPath(state, action) {
-      const { path, content } = action.payload;
-      const file = state.items.find((f) => f.path === path);
-      if (file) {
-        file.content = content;
-      }
-    },
+    addFile(state, action: PayloadAction<FileItem>) { state.items.push(action.payload); },
+    removeFile(state, action: PayloadAction<string>) { state.items = state.items.filter((f) => f.id !== action.payload); },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchFiles.pending, (state) => { state.loading = true; })
-      .addCase(fetchFiles.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items = action.payload;
-      })
-      .addCase(fetchFiles.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(createFile.fulfilled, (state, action) => {
-        state.items.push(action.payload);
-      })
-      .addCase(updateFile.fulfilled, (state, action) => {
-        const idx = state.items.findIndex((f) => f.id === action.payload.id);
-        if (idx >= 0) state.items[idx] = action.payload;
-      })
-      .addCase(deleteFile.fulfilled, (state, action) => {
-        state.items = state.items.filter((f) => f.id !== action.payload);
-      })
-      .addCase(batchUpdateFiles.fulfilled, (state, action) => {
-        for (const file of action.payload) {
-          const idx = state.items.findIndex((f) => f.id === file.id);
-          if (idx >= 0) {
-            state.items[idx] = file;
-          } else {
-            state.items.push(file);
-          }
-        }
-      });
+      .addCase(fetchFiles.pending, (s) => { s.loading = true; })
+      .addCase(fetchFiles.fulfilled, (s, a) => { s.loading = false; s.items = a.payload; })
+      .addCase(fetchFiles.rejected, (s, a) => { s.loading = false; s.error = a.payload as string; })
+      .addCase(createFile.fulfilled, (s, a) => { s.items.push(a.payload); })
+      .addCase(updateFileContent.fulfilled, (s, a) => { const f = s.items.find((i) => i.id === a.payload.fileId); if (f) f.content = a.payload.content; })
+      .addCase(deleteFile.fulfilled, (s, a) => { s.items = s.items.filter((f) => f.id !== a.payload); });
   },
 });
 
-export const { clearFiles, updateFileContent, updateFileByPath } = filesSlice.actions;
+export const { clearFiles, setDiffs, addFile, removeFile } = filesSlice.actions;
 export default filesSlice.reducer;

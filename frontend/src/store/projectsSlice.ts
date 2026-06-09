@@ -1,116 +1,64 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '../services/api';
-import { Project } from '../types/index';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 
-interface ProjectsState {
-  items: Project[];
-  current: Project | null;
-  loading: boolean;
-  error: string | null;
-}
+interface Project { id: string; name: string; description: string; type: string; tags: string[]; isPublic: boolean; createdAt: string; updatedAt: string; ownerName?: string; thumbnail?: string; stars: number; playCount: number }
+interface ProjectsState { items: Project[]; current: Project | null; loading: boolean; error: string | null }
 
-const initialState: ProjectsState = {
-  items: [],
-  current: null,
-  loading: false,
-  error: null,
-};
+const initialState: ProjectsState = { items: [], current: null, loading: false, error: null };
 
 export const fetchProjects = createAsyncThunk('projects/fetchAll', async (_, { rejectWithValue }) => {
   try {
-    const { data } = await api.get('/projects');
-    return data;
-  } catch (err: any) {
-    return rejectWithValue(err.response?.data?.error || 'Failed to fetch projects');
-  }
+    const token = localStorage.getItem('foundry_token');
+    const res = await fetch('/api/projects', { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return rejectWithValue('Failed to fetch');
+    return await res.json();
+  } catch (e: any) { return rejectWithValue(e.message); }
 });
 
 export const fetchProject = createAsyncThunk('projects/fetchOne', async (id: string, { rejectWithValue }) => {
   try {
-    const { data } = await api.get(`/projects/${id}`);
-    return data;
-  } catch (err: any) {
-    return rejectWithValue(err.response?.data?.error || 'Failed to fetch project');
-  }
+    const token = localStorage.getItem('foundry_token');
+    const res = await fetch(`/api/projects/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return rejectWithValue('Not found');
+    return await res.json();
+  } catch (e: any) { return rejectWithValue(e.message); }
 });
 
-export const createProject = createAsyncThunk('projects/create', async (project: Partial<Project>, { rejectWithValue }) => {
+export const createProject = createAsyncThunk('projects/create', async (data: { name: string; description?: string; gameType?: string }, { rejectWithValue }) => {
   try {
-    const { data } = await api.post('/projects', project);
-    return data;
-  } catch (err: any) {
-    return rejectWithValue(err.response?.data?.error || 'Failed to create project');
-  }
-});
-
-export const updateProject = createAsyncThunk('projects/update', async ({ id, ...updates }: Partial<Project> & { id: string }, { rejectWithValue }) => {
-  try {
-    const { data } = await api.patch(`/projects/${id}`, updates);
-    return data;
-  } catch (err: any) {
-    return rejectWithValue(err.response?.data?.error || 'Failed to update project');
-  }
+    const token = localStorage.getItem('foundry_token');
+    const res = await fetch('/api/projects', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) return rejectWithValue('Failed to create');
+    return await res.json();
+  } catch (e: any) { return rejectWithValue(e.message); }
 });
 
 export const deleteProject = createAsyncThunk('projects/delete', async (id: string, { rejectWithValue }) => {
   try {
-    await api.delete(`/projects/${id}`);
+    const token = localStorage.getItem('foundry_token');
+    const res = await fetch(`/api/projects/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return rejectWithValue('Failed to delete');
     return id;
-  } catch (err: any) {
-    return rejectWithValue(err.response?.data?.error || 'Failed to delete project');
-  }
-});
-
-export const forkProject = createAsyncThunk('projects/fork', async (id: string, { rejectWithValue }) => {
-  try {
-    const { data } = await api.post(`/projects/${id}/fork`);
-    return data;
-  } catch (err: any) {
-    return rejectWithValue(err.response?.data?.error || 'Failed to fork project');
-  }
+  } catch (e: any) { return rejectWithValue(e.message); }
 });
 
 const projectsSlice = createSlice({
-  name: 'projects',
-  initialState,
+  name: 'projects', initialState,
   reducers: {
-    clearCurrentProject(state) {
-      state.current = null;
-    },
+    setCurrentProject(state, action: PayloadAction<Project | null>) { state.current = action.payload; },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchProjects.pending, (state) => { state.loading = true; })
-      .addCase(fetchProjects.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items = action.payload;
-      })
-      .addCase(fetchProjects.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(fetchProject.fulfilled, (state, action) => {
-        state.current = action.payload;
-      })
-      .addCase(createProject.fulfilled, (state, action) => {
-        state.items.unshift(action.payload);
-        state.current = action.payload;
-      })
-      .addCase(updateProject.fulfilled, (state, action) => {
-        const idx = state.items.findIndex((p) => p.id === action.payload.id);
-        if (idx >= 0) state.items[idx] = action.payload;
-        if (state.current?.id === action.payload.id) state.current = action.payload;
-      })
-      .addCase(deleteProject.fulfilled, (state, action) => {
-        state.items = state.items.filter((p) => p.id !== action.payload);
-        if (state.current?.id === action.payload) state.current = null;
-      })
-      .addCase(forkProject.fulfilled, (state, action) => {
-        state.items.unshift(action.payload);
-        state.current = action.payload;
-      });
+      .addCase(fetchProjects.pending, (s) => { s.loading = true; })
+      .addCase(fetchProjects.fulfilled, (s, a) => { s.loading = false; s.items = a.payload; })
+      .addCase(fetchProjects.rejected, (s, a) => { s.loading = false; s.error = a.payload as string; })
+      .addCase(fetchProject.fulfilled, (s, a) => { s.current = a.payload; })
+      .addCase(createProject.fulfilled, (s, a) => { s.items.unshift(a.payload); })
+      .addCase(deleteProject.fulfilled, (s, a) => { s.items = s.items.filter((p) => p.id !== a.payload); if (s.current?.id === a.payload) s.current = null; });
   },
 });
 
-export const { clearCurrentProject } = projectsSlice.actions;
+export const { setCurrentProject } = projectsSlice.actions;
 export default projectsSlice.reducer;

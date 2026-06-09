@@ -1,50 +1,56 @@
-import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { RootState } from '../../store/index';
-import { setActiveBottomTab } from '../../store/uiSlice';
+import AIChat from './AIChat';
 import Terminal from './Terminal';
 import Console from './Console';
-import AIChat from './AIChat';
-import DiffViewer from './DiffViewer';
+import DiffPanel from './DiffPanel';
 
 interface Props { projectId: string }
 
 const TABS = [
-  { id: 'terminal' as const, label: 'Terminal', icon: '⬛' },
-  { id: 'console' as const, label: 'Console', icon: '⬜' },
-  { id: 'ai-chat' as const, label: 'AI Chat', icon: '🤖' },
-  { id: 'diff' as const, label: 'Diff', icon: '📝' },
-];
+  { id: 'terminal', label: 'Terminal', icon: '⊞' },
+  { id: 'console', label: 'Console', icon: '⬚' },
+  { id: 'ai-chat', label: 'AI Chat', icon: '✦' },
+  { id: 'diff', label: 'Diff', icon: '⇄' },
+] as const;
+
+type TabId = typeof TABS[number]['id'];
 
 export default function BottomPanel({ projectId }: Props) {
-  const dispatch = useDispatch();
-  const activeTab = useSelector((state: RootState) => state.ui.activeBottomTab);
+  const [activeTab, setActiveTab] = useState<TabId>('terminal');
+  const showAIChatPanel = useSelector((state: RootState) => state.ui.showAIChat);
+
+  const finalTabs = showAIChatPanel || activeTab !== 'ai-chat'
+    ? TABS
+    : TABS.filter((t) => t.id !== 'ai-chat');
 
   return (
-    <div className="flex h-[200px] min-h-[100px] flex-col border-t border-[#3c3c3c] bg-[#1e1e1e]">
-      <div className="flex items-center border-b border-[#3c3c3c] bg-[#252526]">
-        {TABS.map((tab) => (
+    <div className="flex h-full flex-col bg-[#1e1e1e]">
+      <div className="flex shrink-0 items-center border-b border-[#3c3c3c] bg-[#252526]">
+        {finalTabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => dispatch(setActiveBottomTab(tab.id))}
-            className={`flex items-center gap-1 border-r border-[#3c3c3c] px-4 py-1.5 text-[11px] ${
+            className={`flex items-center gap-1.5 border-r border-[#3c3c3c] px-3 py-1.5 text-[11px] transition-colors ${
               activeTab === tab.id
-                ? 'bg-[#1e1e1e] text-[#cccccc] border-t-2 border-t-[#0078d4]'
-                : 'bg-[#2d2d2d] text-[#858585] hover:bg-[#2a2d2e]'
+                ? 'bg-[#1e1e1e] text-white border-t-[1.5px] border-t-[#0078d4]'
+                : 'bg-[#2d2d2d] text-[#969696] hover:bg-[#333] hover:text-[#cccccc]'
             }`}
+            onClick={() => setActiveTab(tab.id)}
           >
-            <span>{tab.icon}</span>
+            <span className="text-[10px]">{tab.icon}</span>
             <span>{tab.label}</span>
           </button>
         ))}
         <div className="flex-1" />
+        <span className="pr-3 text-[10px] text-[#858585]">Problems 0 ⚡ 0</span>
       </div>
 
-      <div className="flex-1 overflow-auto">
-        {activeTab === 'terminal' && <Terminal />}
-        {activeTab === 'console' && <Console />}
+      <div className="flex-1 overflow-hidden">
+        {activeTab === 'terminal' && <Terminal projectId={projectId} />}
+        {activeTab === 'console' && <Console projectId={projectId} />}
         {activeTab === 'ai-chat' && <AIChat projectId={projectId} />}
-        {activeTab === 'diff' && <DiffViewer />}
+        {activeTab === 'diff' && <DiffPanel />}
       </div>
     </div>
   );

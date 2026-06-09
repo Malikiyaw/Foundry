@@ -1,67 +1,65 @@
 import React, { useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from './store/index';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Provider, useDispatch, useSelector } from 'react-redux';
+import { store, AppDispatch, RootState } from './store/index';
 import { fetchMe } from './store/authSlice';
-
-import LoginPage from './components/Auth/LoginPage';
-import SignupPage from './components/Auth/SignupPage';
-import KeyManager from './components/KeyVault/KeyManager';
-import ProjectList from './components/Project/ProjectList';
+import { connectSocket } from './services/socket';
+import { LoginPage, RegisterPage } from './components/Auth';
+import ProjectList from './components/ProjectList';
 import WorkspaceLayout from './components/WorkspaceLayout';
-import PublicGallery from './components/Gallery/PublicGallery';
-import Toaster from './components/Toaster';
+import KeyManager from './components/KeyManager';
+import Gallery from './components/Gallery';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const token = useSelector((state: RootState) => state.auth.token);
-  if (!token) return <Navigate to="/login" replace />;
+  const user = useSelector((s: RootState) => s.auth.user);
+  if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
-export default function App() {
+function AuthGuard({ children }: { children: React.ReactNode }) {
+  const user = useSelector((s: RootState) => s.auth.user);
+  if (user) return <Navigate to="/projects" replace />;
+  return <>{children}</>;
+}
+
+function AppInit({ children }: { children: React.ReactNode }) {
   const dispatch = useDispatch<AppDispatch>();
-  const token = useSelector((state: RootState) => state.auth.token);
 
   useEffect(() => {
+    const token = localStorage.getItem('foundry_token');
     if (token) {
-      dispatch(fetchMe());
+      dispatch(fetchMe()).then((r: any) => {
+        if (!r.error) connectSocket(token);
+      });
     }
-  }, [token, dispatch]);
+  }, [dispatch]);
 
+  return <>{children}</>;
+}
+
+function AppRoutes() {
   return (
-    <>
-      <Toaster />
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route
-          path="/projects"
-          element={
-            <ProtectedRoute>
-              <ProjectList />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/project/:id"
-          element={
-            <ProtectedRoute>
-              <WorkspaceLayout />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/keys"
-          element={
-            <ProtectedRoute>
-              <KeyManager />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/gallery" element={<PublicGallery />} />
-        <Route path="/" element={<Navigate to="/projects" replace />} />
-        <Route path="*" element={<Navigate to="/projects" replace />} />
-      </Routes>
-    </>
+    <BrowserRouter>
+      <AppInit>
+        <Routes>
+          <Route path="/login" element={<AuthGuard><LoginPage /></AuthGuard>} />
+          <Route path="/register" element={<AuthGuard><RegisterPage /></AuthGuard>} />
+          <Route path="/projects" element={<ProtectedRoute><ProjectList /></ProtectedRoute>} />
+          <Route path="/workspace/:id" element={<ProtectedRoute><WorkspaceLayout /></ProtectedRoute>} />
+          <Route path="/keys" element={<ProtectedRoute><KeyManager /></ProtectedRoute>} />
+          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/" element={<Navigate to="/projects" replace />} />
+          <Route path="*" element={<Navigate to="/projects" replace />} />
+        </Routes>
+      </AppInit>
+    </BrowserRouter>
+  );
+}
+
+export default function App() {
+  return (
+    <Provider store={store}>
+      <AppRoutes />
+    </Provider>
   );
 }

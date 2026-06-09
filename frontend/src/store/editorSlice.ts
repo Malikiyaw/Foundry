@@ -1,53 +1,28 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { OpenTab, CursorPosition, RemoteCursor } from '../types/index';
 
-interface EditorState {
-  openTabs: OpenTab[];
-  activeTabIndex: number;
-  cursorPosition: CursorPosition;
-  remoteCursors: RemoteCursor[];
-  isZenMode: boolean;
-  showMinimap: boolean;
-  fontSize: number;
-}
+export interface Tab { fileId: string; path: string; isGenerated: boolean; isDirty: boolean }
 
-const initialState: EditorState = {
-  openTabs: [],
-  activeTabIndex: -1,
-  cursorPosition: { line: 0, column: 0 },
-  remoteCursors: [],
-  isZenMode: false,
-  showMinimap: true,
-  fontSize: 14,
-};
+interface EditorState { openTabs: Tab[]; activeTabIndex: number; showMinimap: boolean; fontSize: number; isZenMode: boolean; showDiff: boolean; }
+
+const initialState: EditorState = { openTabs: [], activeTabIndex: -1, showMinimap: true, fontSize: 14, isZenMode: false, showDiff: false };
 
 const editorSlice = createSlice({
-  name: 'editor',
-  initialState,
+  name: 'editor', initialState,
   reducers: {
-    openFile(state, action: PayloadAction<{ fileId: string; path: string }>) {
-      const existing = state.openTabs.findIndex((t) => t.fileId === action.payload.fileId);
-      if (existing >= 0) {
-        state.activeTabIndex = existing;
-      } else {
-        state.openTabs.push({ fileId: action.payload.fileId, path: action.payload.path, isDirty: false });
-        state.activeTabIndex = state.openTabs.length - 1;
-      }
+    openFile(state, action: PayloadAction<{ fileId: string; path: string; isGenerated?: boolean }>) {
+      const { fileId, path, isGenerated } = action.payload;
+      const existing = state.openTabs.findIndex((t) => t.fileId === fileId);
+      if (existing >= 0) { state.activeTabIndex = existing; return; }
+      state.openTabs.push({ fileId, path, isGenerated: !!isGenerated, isDirty: false });
+      state.activeTabIndex = state.openTabs.length - 1;
     },
     closeTab(state, action: PayloadAction<number>) {
-      state.openTabs.splice(action.payload, 1);
-      if (state.activeTabIndex >= state.openTabs.length) {
-        state.activeTabIndex = state.openTabs.length - 1;
-      }
+      const idx = action.payload;
+      state.openTabs.splice(idx, 1);
+      if (state.openTabs.length === 0) { state.activeTabIndex = -1; return; }
+      if (idx <= state.activeTabIndex) state.activeTabIndex = Math.max(0, state.activeTabIndex - 1);
     },
-    setActiveTab(state, action: PayloadAction<number>) {
-      state.activeTabIndex = action.payload;
-    },
-    moveTab(state, action: PayloadAction<{ from: number; to: number }>) {
-      const [tab] = state.openTabs.splice(action.payload.from, 1);
-      state.openTabs.splice(action.payload.to, 0, tab);
-      state.activeTabIndex = action.payload.to;
-    },
+    setActiveTab(state, action: PayloadAction<number>) { state.activeTabIndex = Math.min(action.payload, state.openTabs.length - 1); },
     markDirty(state, action: PayloadAction<string>) {
       const tab = state.openTabs.find((t) => t.fileId === action.payload);
       if (tab) tab.isDirty = true;
@@ -56,32 +31,12 @@ const editorSlice = createSlice({
       const tab = state.openTabs.find((t) => t.fileId === action.payload);
       if (tab) tab.isDirty = false;
     },
-    setCursorPosition(state, action: PayloadAction<CursorPosition>) {
-      state.cursorPosition = action.payload;
-    },
-    setRemoteCursors(state, action: PayloadAction<RemoteCursor[]>) {
-      state.remoteCursors = action.payload;
-    },
-    toggleZenMode(state) {
-      state.isZenMode = !state.isZenMode;
-    },
-    toggleMinimap(state) {
-      state.showMinimap = !state.showMinimap;
-    },
-    setFontSize(state, action: PayloadAction<number>) {
-      state.fontSize = action.payload;
-    },
-    closeAllTabs(state) {
-      state.openTabs = [];
-      state.activeTabIndex = -1;
-    },
+    toggleMinimap(state) { state.showMinimap = !state.showMinimap; },
+    setFontSize(state, action: PayloadAction<number>) { state.fontSize = Math.max(10, Math.min(30, action.payload)); },
+    toggleZenMode(state) { state.isZenMode = !state.isZenMode; },
+    toggleShowDiff(state) { state.showDiff = !state.showDiff; },
   },
 });
 
-export const {
-  openFile, closeTab, setActiveTab, moveTab,
-  markDirty, markClean, setCursorPosition,
-  setRemoteCursors, toggleZenMode, toggleMinimap,
-  setFontSize, closeAllTabs,
-} = editorSlice.actions;
+export const { openFile, closeTab, setActiveTab, markDirty, markClean, toggleMinimap, setFontSize, toggleZenMode, toggleShowDiff } = editorSlice.actions;
 export default editorSlice.reducer;

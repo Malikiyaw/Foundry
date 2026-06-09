@@ -1,63 +1,61 @@
 import React, { useState } from 'react';
 
-interface TreeNode {
-  name: string;
-  path: string;
-  type: 'file' | 'folder';
-  children: TreeNode[];
-  fileId?: string;
-  isGenerated?: boolean;
-}
+interface TreeNode { name: string; path: string; type: 'file' | 'folder'; children: TreeNode[]; fileId?: string; isGenerated?: boolean; }
 
 interface Props {
-  node: TreeNode;
-  depth: number;
-  onClick: () => void;
-  onContextMenu: (e: React.MouseEvent) => void;
-  onNewFile: () => void;
-  onNewFolder: () => void;
-  onDelete: () => void;
+  node: TreeNode; depth: number;
+  onClick: () => void; onContextMenu: (e: React.MouseEvent) => void;
+  onNewFile: () => void; onDelete: () => void;
   children?: React.ReactNode;
 }
 
-const FILE_ICONS: Record<string, string> = {
-  js: '📄', ts: '📘', jsx: '⚛️', tsx: '⚛️',
-  html: '🌐', css: '🎨', json: '📋', md: '📝',
-  png: '🖼️', jpg: '🖼️', gif: '🖼️', svg: '🖼️',
-  wav: '🔊', mp3: '🎵', ogg: '🔊',
-};
-
-function getIcon(filename: string): string {
-  const ext = filename.split('.').pop() || '';
-  return FILE_ICONS[ext] || (filename.endsWith('/') || !ext ? '📁' : '📄');
+function FileIcon({ name }: { name: string }) {
+  const ext = name.split('.').pop()?.toLowerCase() || '';
+  const iconMap: Record<string, string> = {
+    js: 'JS', ts: 'TS', jsx: '⚛', tsx: '⚛', html: '🌐', css: '🎨', scss: '🎨',
+    json: '{ }', md: '📝', py: '🐍', rb: '💎', go: '🔷', rs: '🦀',
+    yml: '⚙', yaml: '⚙', xml: '📄', sql: '🗄', sh: '⚡', bat: '🪟',
+    ps1: '🔵', env: '🔒', lock: '🔒', gitignore: '👁', svg: '🖼', png: '🖼',
+    jpg: '🖼', jpeg: '🖼', gif: '🖼', mp3: '🎵', wav: '🎵', ogg: '🎵',
+  };
+  return <span className="text-[11px] w-4 text-center">{iconMap[ext] || '📄'}</span>;
 }
 
-function getStatusIcon(isGenerated?: boolean): string | null {
-  if (isGenerated === true) return null; // 'A' for AI generated
-  return null;
-}
+export default function FileItem({ node, depth, onClick, onContextMenu, onNewFile, onDelete, children }: Props) {
+  const [expanded, setExpanded] = useState(node.type === 'folder');
 
-export default function FileItem({ node, depth, onClick, onContextMenu, children }: Props) {
-  const [expanded, setExpanded] = useState(true);
-
-  const isFolder = node.type === 'folder';
-  const icon = isFolder ? (expanded ? '📂' : '📁') : getIcon(node.name);
+  const handleClick = () => {
+    if (node.type === 'folder') setExpanded(!expanded);
+    else onClick();
+  };
 
   return (
     <div>
       <div
-        className="flex cursor-pointer items-center gap-1 px-2 py-0.5 text-xs text-[#cccccc] hover:bg-[#2a2d2e]"
+        className="flex items-center gap-1 px-2 py-0.5 cursor-pointer text-xs text-[#cccccc] hover:bg-[#2a2d2e] transition-colors group"
         style={{ paddingLeft: `${8 + depth * 16}px` }}
-        onClick={() => { if (isFolder) setExpanded(!expanded); else onClick(); }}
+        onClick={handleClick}
         onContextMenu={onContextMenu}
       >
-        <span className="w-4 text-center text-xs">{icon}</span>
-        <span className="flex-1 truncate">{node.name}</span>
-        {node.isGenerated && (
-          <span className="text-[10px] text-[#4ecdc4] font-medium" title="AI Generated">A</span>
+        {node.type === 'folder' && (
+          <span className={`text-[8px] text-[#858585] transition-transform ${expanded ? 'rotate-90' : ''}`}>▶</span>
+        )}
+        {node.type === 'folder' ? (
+          <span className={`text-[11px] ${expanded ? 'text-yellow-400' : 'text-yellow-600'}`}>📁</span>
+        ) : (
+          <FileIcon name={node.name} />
+        )}
+        <span className="truncate flex-1">{node.name}</span>
+        {node.isGenerated && <span className="text-[8px] text-blue-400" title="AI Generated">◆</span>}
+        {node.type === 'folder' && (
+          <div className="ml-auto hidden group-hover:flex gap-0.5">
+            <button className="px-1 text-[9px] text-[#858585] hover:text-white" onClick={(e) => { e.stopPropagation(); onNewFile(); }} title="New File">
+              +
+            </button>
+          </div>
         )}
       </div>
-      {isFolder && expanded && children}
+      {node.type === 'folder' && expanded && children}
     </div>
   );
 }

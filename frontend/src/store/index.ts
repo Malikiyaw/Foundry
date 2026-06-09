@@ -16,7 +16,7 @@ export const store = configureStore({
     ui: uiReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({ serializableCheck: false }),
+    getDefaultMiddleware({ serializableCheck: { ignoredActions: ['auth/setUser'] } }),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

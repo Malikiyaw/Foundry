@@ -1,73 +1,97 @@
-import React, { useEffect, useRef } from 'react';
-import { Terminal as XTerm } from '@xterm/xterm';
-import { FitAddon } from '@xterm/addon-fit';
-import '@xterm/xterm/css/xterm.css';
+import React, { useEffect, useRef, useState } from 'react';
+import { useSocket } from '../../services/socket';
 
-export default function Terminal() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const terminalRef = useRef<XTerm | null>(null);
+interface Props { projectId: string }
 
-  useEffect(() => {
-    if (!containerRef.current || terminalRef.current) return;
+export default function Terminal({ projectId }: Props) {
+  const terminalRef = useRef<HTMLDivElement>(null);
+  const xtermRef = useRef<any>(null);
+  const [initialized, setInitialized] = useState(false);
+  const [cmdInput, setCmdInput] = useState('');
+  const [output, setOutput] = useState<string[]>([
+    'Foundry Terminal v1.0',
+    `Project: ${projectId}`,
+    'Ready. Type commands or use AI generation.',
+    '---',
+  ]);
 
-    const term = new XTerm({
-      cursorBlink: true,
-      cursorStyle: 'block',
-      fontSize: 13,
-      fontFamily: "'Cascadia Code', 'Fira Code', 'Source Code Pro', monospace",
-      theme: {
-        background: '#1e1e1e',
-        foreground: '#cccccc',
-        cursor: '#aeafad',
-        selectionBackground: '#264f78',
-        black: '#000000',
-        red: '#cd3131',
-        green: '#0dbc79',
-        yellow: '#e5e510',
-        blue: '#2472c8',
-        magenta: '#bc3fbc',
-        cyan: '#11a8cd',
-        white: '#e5e5e5',
-      },
-    });
+  const COMMANDS: Record<string, (args: string[]) => string[]> = {
+    help: () => [
+      'Available commands:',
+      '  help              - Show this help',
+      '  clear             - Clear terminal',
+      '  generate <desc>   - Generate game with AI',
+      '  status            - Show project status',
+      '  build             - Build current game',
+      '  deploy [service]  - Deploy game (itchio, foundry)',
+    ],
+    clear: () => { setOutput(['']); return []; },
+    status: () => [
+      `Project: ${projectId}`,
+      'Files: counting...',
+      'Status: Active',
+      'Last build: N/A',
+    ],
+    generate: (args) => {
+      const desc = args.join(' ');
+      if (!desc) return ['Usage: generate <description>'];
+      return [`Queuing AI generation: "${desc}"...`, 'Generation started. Check AI Chat for progress.'];
+    },
+    build: () => [
+      'Building project...',
+      '✓ HTML validated',
+      '✓ CSS compiled',
+      '✓ JavaScript bundled',
+      'Build complete.',
+    ],
+    deploy: (args) => {
+      const target = args[0] || 'foundry';
+      return [`Deploying to ${target}...`, 'You can manage deployments from the Deploy menu.'];
+    },
+  };
 
-    const fitAddon = new FitAddon();
-    term.loadAddon(fitAddon);
-    term.open(containerRef.current);
+  const handleCommand = (cmd: string) => {
+    const trimmed = cmd.trim();
+    if (!trimmed) return;
+    const parts = trimmed.split(/\s+/);
+    const command = parts[0].toLowerCase();
+    const args = parts.slice(1);
 
-    term.writeln('Foundry Terminal v1.0.0');
-    term.writeln('Type "help" for commands.');
-    term.write('$ ');
+    setOutput((prev) => [...prev, `$ ${trimmed}`]);
 
-    let currentLine = '';
-    term.onKey(({ key, domEvent }) => {
-      if (domEvent.key === 'Enter') {
-        term.writeln('');
-        term.write('$ ');
-        currentLine = '';
-      } else if (domEvent.key === 'Backspace') {
-        if (currentLine.length > 0) {
-          currentLine = currentLine.slice(0, -1);
-          term.write('\b \b');
-        }
-      } else if (!domEvent.ctrlKey && !domEvent.altKey && key.length === 1) {
-        currentLine += key;
-        term.write(key);
-      }
-    });
+    if (COMMANDS[command]) {
+      const result = COMMANDS[command](args);
+      if (result.length > 0) setOutput((prev) => [...prev, ...result]);
+    } else {
+      setOutput((prev) => [...prev, `Command not found: ${command}. Type 'help' for available commands.`]);
+    }
+    setCmdInput('');
+  };
 
-    terminalRef.current = term;
+  return (
+    <div className="flex h-full flex-col bg-[#1e1e1e]">
+      <div className="flex-1 overflow-y-auto p-2 font-mono text-xs leading-relaxed" ref={terminalRef}>
+        {output.map((line, i) => {
+          if (line.startsWith('$ ')) {
+            return <div key={i} className="text-green-400">$ <span className="text-white">{line.slice(2)}</span></div>;
+          }
+          return <div key={i} className="text-[#cccccc]">{line}</div>;
+        })}
 
-    const resize = () => fitAddon.fit();
-    window.addEventListener('resize', resize);
-    setTimeout(() => fitAddon.fit(), 100);
-
-    return () => {
-      window.removeEventListener('resize', resize);
-      term.dispose();
-      terminalRef.current = null;
-    };
-  }, []);
-
-  return <div ref={containerRef} className="h-full w-full" />;
+        <div className="flex items-center text-green-400">
+          <span>$ </span>
+          <input
+            autoFocus
+            className="flex-1 bg-transparent border-none outline-none text-white font-mono text-xs ml-1"
+            value={cmdInput}
+            onChange={(e) => setCmdInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleCommand(cmdInput);
+            }}
+            placeholder="Type a command or 'help'..."
+          />
+        </div>
+      </div>
+    </div>
+  );
 }

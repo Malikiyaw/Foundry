@@ -1,86 +1,71 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store/index';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useSocket } from '../../services/socket';
 
 interface Props { projectId: string }
 
 export default function LivePreview({ projectId }: Props) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [fps, setFps] = useState(0);
-  const [showPerf, setShowPerf] = useState(false);
-  const files = useSelector((state: RootState) => state.files.items);
-  const [updateTrigger, setUpdateTrigger] = useState(0);
+  const [connected, setConnected] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [hotReloadCount, setHotReloadCount] = useState(0);
 
-  const liveContent = useMemo(() => {
-    const indexFile = files.find((f) => f.path === 'index.html');
-    if (!indexFile) return null;
+  const socket = useSocket();
 
-    const scripts = files
-      .filter((f) => f.path.endsWith('.js') && f.path !== 'index.html')
-      .map((f) => `<script>${f.content}</script>`)
-      .join('\n');
-
-    return indexFile.content.replace('</body>', `${scripts}\n</body>`);
-  }, [files, updateTrigger]);
+  const refreshPreview = useCallback(() => {
+    if (iframeRef.current) {
+      iframeRef.current.src = `/api/projects/${projectId}/preview?live=true&t=${Date.now()}`;
+      setLastRefresh(new Date());
+    }
+  }, [projectId]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setUpdateTrigger((t) => t + 1), 300);
-    return () => clearTimeout(timer);
-  }, [files]);
-
-  useEffect(() => {
-    let frame: number;
-    let lastTime = performance.now();
-    const measure = (time: number) => {
-      setFps(Math.round(1000 / (time - lastTime)));
-      lastTime = time;
-      frame = requestAnimationFrame(measure);
-    };
-    if (showPerf) frame = requestAnimationFrame(measure);
-    return () => cancelAnimationFrame(frame);
-  }, [showPerf]);
+    if (!socket) return;
+    socket.on('hotreload', () => {
+      setHotReloadCount((c) => c + 1);
+      refreshPreview();
+    });
+    return () => { socket.off('hotreload'); };
+  }, [socket, refreshPreview]);
 
   return (
-    <div className="relative flex h-full flex-col bg-[#1e1e1e]">
-      <div className="flex items-center justify-between border-b border-[#3c3c3c] px-3 py-1">
-        <span className="text-[11px] font-medium text-[#858585] uppercase tracking-wider">
-          Live Preview
-        </span>
+    <div className="flex h-full flex-col bg-[#1e1e1e]">
+      <div className="flex items-center justify-between border-b border-[#3c3c3c] bg-[#252526] px-3 py-1.5 shrink-0">
+        <div className="flex items-center gap-2">
+          <span className={`text-[10px] ${connected ? 'text-green-400' : 'text-yellow-500'}`}>⬤</span>
+          <span className="text-[11px] text-[#cccccc] font-medium">Live Preview</span>
+          <span className="text-[10px] text-[#858585]">(Hot Reload)</span>
+          {hotReloadCount > 0 && (
+            <span className="text-[9px] text-blue-400">⟳{hotReloadCount}</span>
+          )}
+        </div>
         <div className="flex items-center gap-1">
           <button
-            onClick={() => iframeRef.current?.contentWindow?.location.reload()}
-            className="rounded px-1.5 py-0.5 text-[11px] text-[#858585] hover:bg-[#3c3c3c]"
-            title="Refresh"
+            onClick={refreshPreview}
+            className="px-1.5 py-0.5 text-[10px] text-[#858585] hover:text-white rounded"
+            title="Refresh Preview"
           >
-            ↻
-          </button>
-          <button
-            onClick={() => setShowPerf(!showPerf)}
-            className={`rounded px-1.5 py-0.5 text-[11px] ${showPerf ? 'text-[#4ecdc4]' : 'text-[#858585]'} hover:bg-[#3c3c3c]`}
-            title="Performance Overlay"
-          >
-            📊
+            🔄
           </button>
         </div>
       </div>
 
-      <div className="relative flex-1">
-        {liveContent ? (
-          <iframe
-            ref={iframeRef}
-            srcDoc={liveContent}
-            className="h-full w-full border-0 bg-white"
-            title="Live Preview"
-            sandbox="allow-scripts allow-same-origin"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <p className="text-sm text-[#858585]">Generate a game to see live preview</p>
-          </div>
-        )}
-        {showPerf && (
-          <div className="absolute right-2 top-2 rounded bg-black/80 px-2 py-1 text-xs text-[#4ecdc4]">
-            FPS: {fps}
+      <div className="relative flex-1 overflow-hidden">
+        <iframe
+          ref={iframeRef}
+          src={`/api/projects/${projectId}/preview?live=true`}
+          className="h-full w-full border-0"
+          title="Live Game Preview"
+          sandbox="allow-scripts allow-same-origin allow-popups"
+        />
+
+        <div className="absolute bottom-2 right-2 flex items-center gap-2 rounded bg-black/50 px-2 py-0.5 text-[10px] backdrop-blur-sm">
+          <span className="text-[#858585]">Hot Reload</span>
+          <span className={`h-1.5 w-1.5 rounded-full ${connected ? 'bg-green-400' : 'bg-yellow-500'}`} />
+        </div>
+
+        {!connected && (
+          <div className="absolute right-2 top-2 rounded bg-yellow-500/10 px-2 py-0.5 text-[9px] text-yellow-400 border border-yellow-500/20">
+            Connecting...
           </div>
         )}
       </div>
