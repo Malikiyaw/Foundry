@@ -17,7 +17,7 @@ const FILE_COLORS: Record<string, string> = {
   yml: '#cb171e', yaml: '#cb171e', xml: '#0060ac', sql: '#e38c00',
   sh: '#4eaa25', svg: '#ffb13b', png: '#a855f7', jpg: '#a855f7',
   gif: '#a855f7', mp3: '#1db954', wav: '#1db954', ogg: '#1db954',
-  css: '#264de4', lock: '#6b7280', env: '#ecd53f',
+  lock: '#6b7280', env: '#ecd53f',
 };
 
 function FileIcon({ name, isFolder, isExpanded }: { name: string; isFolder?: boolean; isExpanded?: boolean }) {

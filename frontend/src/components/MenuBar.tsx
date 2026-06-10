@@ -12,7 +12,7 @@ const MENUS = [
     items: [
       { label: 'New Project', shortcut: 'Ctrl+N', action: (n: any) => n('/projects') },
       { label: 'Save All', shortcut: 'Ctrl+S', action: () => {} },
-      { label: 'Export ZIP', shortcut: '', action: (n: any, pid: string) => window.open(`/api/projects/${pid}/export`) },
+      { label: 'Export ZIP', shortcut: '', action: async (n: any, pid: string) => { const { exportProjectAsZip } = await import('../services/previewService'); await exportProjectAsZip(pid); } },
       { label: 'Deploy to itch.io', shortcut: '', action: () => {} },
     ],
   },

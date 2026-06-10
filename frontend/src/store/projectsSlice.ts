@@ -1,47 +1,38 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { db, Project, generateId, nowISO } from '../services/db';
 
-interface Project { id: string; name: string; description: string; type: string; tags: string[]; isPublic: boolean; createdAt: string; updatedAt: string; ownerName?: string; thumbnail?: string; stars: number; playCount: number }
 interface ProjectsState { items: Project[]; current: Project | null; loading: boolean; error: string | null }
 
 const initialState: ProjectsState = { items: [], current: null, loading: false, error: null };
 
-export const fetchProjects = createAsyncThunk('projects/fetchAll', async (_, { rejectWithValue }) => {
-  try {
-    const token = localStorage.getItem('foundry_token');
-    const res = await fetch('/api/projects', { headers: { Authorization: `Bearer ${token}` } });
-    if (!res.ok) return rejectWithValue('Failed to fetch');
-    return await res.json();
-  } catch (e: any) { return rejectWithValue(e.message); }
+export const fetchProjects = createAsyncThunk('projects/fetchAll', async () => {
+  return await db.projects.orderBy('updatedAt').reverse().toArray();
 });
 
-export const fetchProject = createAsyncThunk('projects/fetchOne', async (id: string, { rejectWithValue }) => {
-  try {
-    const token = localStorage.getItem('foundry_token');
-    const res = await fetch(`/api/projects/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-    if (!res.ok) return rejectWithValue('Not found');
-    return await res.json();
-  } catch (e: any) { return rejectWithValue(e.message); }
+export const fetchProject = createAsyncThunk('projects/fetchOne', async (id: string) => {
+  return await db.projects.get(id) || null;
 });
 
-export const createProject = createAsyncThunk('projects/create', async (data: { name: string; description?: string; gameType?: string }, { rejectWithValue }) => {
-  try {
-    const token = localStorage.getItem('foundry_token');
-    const res = await fetch('/api/projects', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) return rejectWithValue('Failed to create');
-    return await res.json();
-  } catch (e: any) { return rejectWithValue(e.message); }
+export const createProject = createAsyncThunk('projects/create', async (data: { name: string; description?: string; gameType?: string }) => {
+  const now = nowISO();
+  const project: Project = {
+    id: generateId(), name: data.name, description: data.description || '',
+    gameType: data.gameType || 'platformer', tags: [], isPublic: false,
+    createdAt: now, updatedAt: now,
+  };
+  await db.projects.add(project);
+  return project;
 });
 
-export const deleteProject = createAsyncThunk('projects/delete', async (id: string, { rejectWithValue }) => {
-  try {
-    const token = localStorage.getItem('foundry_token');
-    const res = await fetch(`/api/projects/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-    if (!res.ok) return rejectWithValue('Failed to delete');
-    return id;
-  } catch (e: any) { return rejectWithValue(e.message); }
+export const updateProject = createAsyncThunk('projects/update', async ({ id, ...data }: Partial<Project> & { id: string }) => {
+  await db.projects.update(id, { ...data, updatedAt: nowISO() });
+  return { id, ...data };
+});
+
+export const deleteProject = createAsyncThunk('projects/delete', async (id: string) => {
+  await db.projects.delete(id);
+  await db.files.where('projectId').equals(id).delete();
+  return id;
 });
 
 const projectsSlice = createSlice({
@@ -56,6 +47,11 @@ const projectsSlice = createSlice({
       .addCase(fetchProjects.rejected, (s, a) => { s.loading = false; s.error = a.payload as string; })
       .addCase(fetchProject.fulfilled, (s, a) => { s.current = a.payload; })
       .addCase(createProject.fulfilled, (s, a) => { s.items.unshift(a.payload); })
+      .addCase(updateProject.fulfilled, (s, a) => {
+        const i = s.items.findIndex((p) => p.id === a.payload.id);
+        if (i >= 0) Object.assign(s.items[i], a.payload);
+        if (s.current?.id === a.payload.id) Object.assign(s.current!, a.payload);
+      })
       .addCase(deleteProject.fulfilled, (s, a) => { s.items = s.items.filter((p) => p.id !== a.payload); if (s.current?.id === a.payload) s.current = null; });
   },
 });

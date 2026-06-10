@@ -4,8 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Group, Panel, Separator } from 'react-resizable-panels';
 import { AppDispatch, RootState } from '../store/index';
 import { fetchProject } from '../store/projectsSlice';
-import { fetchFiles, clearFiles } from '../store/filesSlice';
-import { joinProject, leaveProject } from '../services/socket';
+import { fetchFiles, clearFiles, addFile } from '../store/filesSlice';
 import { Spinner } from './shared/Spinner';
 
 import MenuBar from './MenuBar';
@@ -48,8 +47,7 @@ export default function WorkspaceLayout() {
     if (!id) return;
     dispatch(fetchProject(id));
     dispatch(fetchFiles(id));
-    joinProject(id);
-    return () => { leaveProject(id); dispatch(clearFiles()); };
+    return () => { dispatch(clearFiles()); };
   }, [id, dispatch]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -60,16 +58,12 @@ export default function WorkspaceLayout() {
       reader.onload = (ev) => {
         const content = ev.target?.result as string;
         if (content) {
-          fetch(`/api/projects/${id}/files`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('foundry_token')}` },
-            body: JSON.stringify({ path: file.name, content, fileType: 'code' }),
-          });
+          dispatch(addFile({ projectId: id!, path: file.name, content, fileType: 'code' } as any));
         }
       };
       reader.readAsText(file);
     });
-  }, [id]);
+  }, [id, dispatch]);
 
   if (!id) return null;
 
