@@ -11,3 +11,5 @@ out/
 *.zip
 uploads/
 temp/
+backend/
+docker/

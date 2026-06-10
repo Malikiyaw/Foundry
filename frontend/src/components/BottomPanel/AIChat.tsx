@@ -1,15 +1,28 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store/index';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/index';
 import { getDecryptedKey } from '../../store/keysSlice';
 import { streamAIResponse } from '../../services/aiProviders';
-import { db, generateId } from '../../services/db';
+import { db, generateId, nowISO } from '../../services/db';
+import { addFile, updateFileContent } from '../../store/filesSlice';
+import { gameOrchestrator, StageProgress } from '../../services/gameOrchestrator';
 
 interface Props { projectId: string }
 
 interface Message { role: 'user' | 'assistant' | 'system'; content: string; timestamp: Date }
 
+const TEMPLATES = [
+  { id: 'platformer', label: 'Platformer', desc: 'Side-scrolling jump & run' },
+  { id: 'rpg', label: 'Top-Down RPG', desc: 'Character movement, NPCs, inventory' },
+  { id: 'runner', label: 'Endless Runner', desc: 'Auto-scrolling obstacle game' },
+  { id: 'match3', label: 'Match-3 Puzzle', desc: 'Grid swapping puzzle game' },
+  { id: 'visualnovel', label: 'Visual Novel', desc: 'Dialogue choices & branching' },
+  { id: 'card', label: 'Card Battler', desc: 'Deck-building turn-based game' },
+  { id: 'blank', label: 'Blank', desc: 'Start from scratch' },
+];
+
 export default function AIChat({ projectId }: Props) {
+  const dispatch = useDispatch<AppDispatch>();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
@@ -20,6 +33,12 @@ export default function AIChat({ projectId }: Props) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const keys = useSelector((state: RootState) => state.keys.items);
+
+  const [showGenerator, setShowGenerator] = useState(false);
+  const [genPrompt, setGenPrompt] = useState('');
+  const [genTemplate, setGenTemplate] = useState('platformer');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [genProgress, setGenProgress] = useState('');
 
   useEffect(() => { setAvailableProviders(keys.filter(k => k.isActive).map(k => k.provider)); }, [keys]);
 
@@ -44,6 +63,68 @@ export default function AIChat({ projectId }: Props) {
       js: 'game.js', ts: 'game.ts',
     };
     return map[lang] || `file.${lang}`;
+  };
+
+  const addProjectFile = async (path: string, content: string, fileType = 'code') => {
+    const existing = await db.files.where({ projectId, path }).first();
+    const now = nowISO();
+    if (existing) {
+      await db.files.update(existing.id, { content, updatedAt: now, isGenerated: true });
+      dispatch(updateFileContent({ fileId: existing.id, content }));
+    } else {
+      const id = generateId();
+      const file = { id, projectId, path, content, fileType, isGenerated: true, createdAt: now, updatedAt: now };
+      await db.files.add(file);
+      dispatch(addFile(file));
+    }
+  };
+
+  const handleGenerateGame = async () => {
+    if (!genPrompt.trim() || isGenerating) return;
+    setIsGenerating(true);
+    setGenProgress('');
+    setShowGenerator(false);
+
+    const systemMsg: Message = { role: 'system', content: `Starting game generation (${genTemplate})...`, timestamp: new Date() };
+    setMessages((p) => [...p, systemMsg]);
+
+    try {
+      const result = await gameOrchestrator.generateGame(
+        'local-user', projectId, genPrompt, genTemplate,
+        (progress: StageProgress) => {
+          setGenProgress(progress.message);
+          const msg: Message = {
+            role: 'system',
+            content: progress.complete ? `✅ ${progress.message}` : `⏳ ${progress.message}`,
+            timestamp: new Date(),
+          };
+          setMessages((p) => [...p, msg]);
+        }
+      );
+
+      for (const file of result.files) {
+        await addProjectFile(file.path, file.content, 'code');
+      }
+
+      for (const asset of result.assets) {
+        await addProjectFile(asset.filename, atob(asset.data), 'image');
+      }
+
+      const summary = `**Generation Complete!**
+- ${result.files.length} source files created
+- ${result.assets.length} placeholder assets created
+- ${result.sounds.length} sounds
+
+${result.playtestResults ? `\n**Playtest Review:**\n${result.playtestResults}` : ''}`;
+
+      setMessages((p) => [...p, { role: 'assistant', content: summary, timestamp: new Date() }]);
+    } catch (e: any) {
+      setMessages((p) => [...p, { role: 'system', content: `❌ Generation failed: ${e.message}`, timestamp: new Date() }]);
+    } finally {
+      setIsGenerating(false);
+      setGenProgress('');
+      setGenPrompt('');
+    }
   };
 
   const sendMessage = async () => {
@@ -76,21 +157,11 @@ Include all necessary logic. Make sure the game is fully functional and runnable
           setStreamedContent('');
           setMessages((p) => [...p, { role: 'assistant', content: fullText, timestamp: new Date() }]);
 
-          // Extract code blocks and save as files
           const blocks = extractCodeBlocks(fullText);
           for (const block of blocks) {
             if (block.code.trim()) {
               const path = guessFilePath(block.lang);
-              const existing = await db.files.where({ projectId, path }).first();
-              if (existing) {
-                await db.files.update(existing.id, { content: block.code, updatedAt: new Date().toISOString(), isGenerated: true });
-              } else {
-                await db.files.add({
-                  id: generateId(), projectId, path, content: block.code,
-                  fileType: 'code', isGenerated: true,
-                  createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-                });
-              }
+              await addProjectFile(path, block.code);
             }
           }
           setIsStreaming(false);
@@ -129,7 +200,63 @@ Include all necessary logic. Make sure the game is fully functional and runnable
             <option value="">No keys active</option>
           )}
         </select>
+        <div className="flex-1" />
+        <button
+          className="rounded-md px-2 py-1 text-[10px] font-medium transition-all hover:opacity-80"
+          style={{ background: 'var(--gradient-1)', color: 'white' }}
+          onClick={() => setShowGenerator(!showGenerator)}
+        >
+          {showGenerator ? 'Cancel' : 'Generate Game'}
+        </button>
       </div>
+
+      {showGenerator && (
+        <div className="border-b p-3 space-y-2 animate-fadeIn" style={{ borderColor: 'var(--border-primary)', background: 'var(--bg-secondary)' }}>
+          <div className="grid grid-cols-4 gap-1.5">
+            {TEMPLATES.map((t) => (
+              <button
+                key={t.id}
+                className={`rounded-lg p-2 text-[10px] text-left transition-all ${genTemplate === t.id ? 'ring-2' : 'opacity-70 hover:opacity-100'}`}
+                style={{
+                  background: genTemplate === t.id ? 'var(--accent)' : 'var(--bg-tertiary)',
+                  color: genTemplate === t.id ? 'white' : 'var(--text-primary)',
+                  borderColor: genTemplate === t.id ? 'var(--accent)' : 'transparent',
+                }}
+                onClick={() => setGenTemplate(t.id)}
+              >
+                <div className="font-medium">{t.label}</div>
+                <div className="opacity-60">{t.desc}</div>
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <input
+              className="input-field flex-1 !rounded-lg !text-[11px]"
+              placeholder="Describe your game — theme, mechanics, style..."
+              value={genPrompt}
+              onChange={(e) => setGenPrompt(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleGenerateGame(); } }}
+            />
+            <button
+              className="rounded-lg px-4 py-2 text-[11px] font-medium transition-all"
+              style={{ background: 'var(--gradient-1)', color: 'white', opacity: (!genPrompt.trim() || isGenerating) ? 0.5 : 1 }}
+              onClick={handleGenerateGame}
+              disabled={!genPrompt.trim() || isGenerating}
+            >
+              {isGenerating ? (
+                <span className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: 'white', animationDelay: '0ms' }} />
+                  <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: 'white', animationDelay: '150ms' }} />
+                  <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: 'white', animationDelay: '300ms' }} />
+                </span>
+              ) : 'Generate'}
+            </button>
+          </div>
+          {genProgress && (
+            <div className="text-[10px] animate-pulse" style={{ color: 'var(--text-muted)' }}>{genProgress}</div>
+          )}
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {messages.length === 0 && !isStreaming && (
@@ -138,8 +265,8 @@ Include all necessary logic. Make sure the game is fully functional and runnable
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
             </div>
             <h3 className="text-sm font-semibold text-white mb-1">Foundry AI</h3>
-            <p className="text-xs max-w-[280px] mb-5" style={{ color: 'var(--text-secondary)' }}>
-              Describe your game idea. AI agents will generate code directly in your browser.
+            <p className="text-xs max-w-[280px] mb-5" style={{ color: 'var(--text-secondary) }}>
+              Click "Generate Game" above for a full multi-agent pipeline, or chat below for individual prompts.
             </p>
           </div>
         )}
@@ -148,7 +275,7 @@ Include all necessary logic. Make sure the game is fully functional and runnable
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fadeIn`}>
             <div className="max-w-[85%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed whitespace-pre-wrap" style={{
               background: msg.role === 'user' ? 'var(--accent)' : msg.role === 'system' ? 'var(--danger-subtle)' : 'var(--bg-secondary)',
-              color: msg.role === 'system' ? 'var(--danger)' : 'var(--text-primary)',
+              color: msg.role === 'system' ? 'var(--text-primary)' : 'var(--text-primary)',
               borderBottomRightRadius: msg.role === 'user' ? '4px' : undefined,
               borderBottomLeftRadius: msg.role !== 'user' ? '4px' : undefined,
             }}>
@@ -179,7 +306,7 @@ Include all necessary logic. Make sure the game is fully functional and runnable
 
       <div className="border-t p-3 shrink-0" style={{ borderColor: 'var(--border-primary)', background: 'var(--bg-secondary)' }}>
         <div className="flex items-end gap-2">
-          <textarea ref={inputRef} className="input-field !resize-none !rounded-xl" rows={2} placeholder="Describe what to build or change..." value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} />
+          <textarea ref={inputRef} className="input-field !resize-none !rounded-xl" rows={2} placeholder="Ask AI to write code, fix bugs, or improve your game..." value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} />
           <button
             className="flex h-[42px] w-[42px] items-center justify-center rounded-xl shrink-0 transition-all"
             style={{ background: isStreaming ? 'var(--danger)' : 'var(--gradient-1)', opacity: (!input.trim() && !isStreaming) ? 0.5 : 1 }}

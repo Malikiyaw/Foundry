@@ -54,5 +54,5 @@ const filesSlice = createSlice({
   },
 });
 
-export const { clearFiles, setDiffs, addFile, removeFile } = filesSlice.actions;
+export const { clearFiles, setDiffs, addFile, removeFile, updateFileContent } = filesSlice.actions;
 export default filesSlice.reducer;
