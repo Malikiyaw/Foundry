@@ -4,7 +4,7 @@ import { RootState, AppDispatch } from '../../store/index';
 import { getDecryptedKey } from '../../store/keysSlice';
 import { streamAIResponse } from '../../services/aiProviders';
 import { db, generateId, nowISO } from '../../services/db';
-import { addFile, updateFileContent } from '../../store/filesSlice';
+import { addFile, applyFileContent } from '../../store/filesSlice';
 import { gameOrchestrator, StageProgress } from '../../services/gameOrchestrator';
 
 interface Props { projectId: string }
@@ -70,7 +70,7 @@ export default function AIChat({ projectId }: Props) {
     const now = nowISO();
     if (existing) {
       await db.files.update(existing.id, { content, updatedAt: now, isGenerated: true });
-      dispatch(updateFileContent({ fileId: existing.id, content }));
+      dispatch(applyFileContent({ fileId: existing.id, content }));
     } else {
       const id = generateId();
       const file = { id, projectId, path, content, fileType, isGenerated: true, createdAt: now, updatedAt: now };
@@ -265,7 +265,7 @@ Include all necessary logic. Make sure the game is fully functional and runnable
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
             </div>
             <h3 className="text-sm font-semibold text-white mb-1">Foundry AI</h3>
-            <p className="text-xs max-w-[280px] mb-5" style={{ color: 'var(--text-secondary) }}>
+            <p className="text-xs max-w-[280px] mb-5" style={{ color: 'var(--text-secondary)' }}>
               Click "Generate Game" above for a full multi-agent pipeline, or chat below for individual prompts.
             </p>
           </div>

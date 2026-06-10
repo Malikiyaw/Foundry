@@ -36,7 +36,7 @@ const filesSlice = createSlice({
   reducers: {
     clearFiles(state) { state.items = []; state.diffs = null; },
     setDiffs(state, action) { state.diffs = action.payload; },
-    updateFileContent(state, action: PayloadAction<{ fileId: string; content: string }>) {
+    applyFileContent(state, action: PayloadAction<{ fileId: string; content: string }>) {
       const f = state.items.find((i) => i.id === action.payload.fileId);
       if (f) { f.content = action.payload.content; f.updatedAt = nowISO(); }
     },
@@ -54,5 +54,5 @@ const filesSlice = createSlice({
   },
 });
 
-export const { clearFiles, setDiffs, addFile, removeFile, updateFileContent } = filesSlice.actions;
+export const { clearFiles, setDiffs, addFile, removeFile, applyFileContent } = filesSlice.actions;
 export default filesSlice.reducer;
