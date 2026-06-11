@@ -14,7 +14,7 @@ export default defineConfig({
     port: 5173,
   },
   build: {
-    outDir: path.resolve(__dirname, '../dist'),
+    outDir: 'dist',
     sourcemap: false,
     rollupOptions: {
       output: {
