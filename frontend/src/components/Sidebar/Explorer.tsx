@@ -86,7 +86,7 @@ export default function Explorer({ projectId }: Props) {
   if (files.length === 0) {
     return (
       <div className="h-full">
-        <EmptyState icon="📂" title="No files" description="Create a file to get started" />
+        <EmptyState title="No files" description="Create a file to get started" />
       </div>
     );
   }
@@ -99,7 +99,8 @@ export default function Explorer({ projectId }: Props) {
         <div className="flex items-center px-2 py-0.5 animate-fadeIn" style={{ paddingLeft: `${16 + (newItemPath.split('/').length) * 16}px` }}>
           <input
             autoFocus
-            className="w-full bg-[#3c3c3c] px-1.5 py-0.5 text-xs text-[#cccccc] outline-none border border-[#0078d4] rounded"
+            className="w-full px-1.5 py-0.5 text-xs outline-none rounded"
+            style={{ background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--accent)' }}
             placeholder="filename.js"
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleCreateItem((e.target as HTMLInputElement).value);
@@ -112,21 +113,24 @@ export default function Explorer({ projectId }: Props) {
 
       {contextMenu && (
         <div
-          className="fixed z-50 min-w-[170px] rounded border border-[#3c3c3c] bg-[#252526] py-1 shadow-2xl animate-scaleIn"
-          style={{ left: contextMenu.x, top: contextMenu.y }}
+          className="fixed z-50 min-w-[170px] rounded py-1 animate-scaleIn border"
+          style={{ left: contextMenu.x, top: contextMenu.y, background: 'var(--bg-secondary)', borderColor: 'var(--border-primary)' }}
           onClick={(e) => e.stopPropagation()}
         >
-          <button className="flex w-full items-center gap-2 px-4 py-1.5 text-left text-xs text-[#cccccc] hover:bg-[#094771] transition-colors" onClick={() => handleNewFile(contextMenu.node?.path || '')}>
-            <span>📄</span> New File
+          <button className="flex w-full items-center gap-2 px-4 py-1.5 text-left text-xs transition-colors" style={{ color: 'var(--text-primary)' }} onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'} onClick={() => handleNewFile(contextMenu.node?.path || '')}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            New File
           </button>
-          <button className="flex w-full items-center gap-2 px-4 py-1.5 text-left text-xs text-[#cccccc] hover:bg-[#094771] transition-colors" onClick={() => handleNewFile(contextMenu.node?.path || '')}>
-            <span>📁</span> New Folder
+          <button className="flex w-full items-center gap-2 px-4 py-1.5 text-left text-xs transition-colors" style={{ color: 'var(--text-primary)' }} onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'} onClick={() => handleNewFile(contextMenu.node?.path || '')}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+            New Folder
           </button>
           {contextMenu.node?.fileId && (
             <>
-              <div className="my-1 border-t border-[#3c3c3c]" />
-              <button className="flex w-full items-center gap-2 px-4 py-1.5 text-left text-xs text-red-400 hover:bg-[#094771] transition-colors" onClick={() => handleDelete(contextMenu.node!.fileId!)}>
-                <span>🗑</span> Delete
+              <div className="my-1 border-t" style={{ borderColor: 'var(--border-primary)' }} />
+              <button className="flex w-full items-center gap-2 px-4 py-1.5 text-left text-xs transition-colors" style={{ color: 'var(--danger)' }} onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'} onClick={() => handleDelete(contextMenu.node!.fileId!)}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                Delete
               </button>
             </>
           )}

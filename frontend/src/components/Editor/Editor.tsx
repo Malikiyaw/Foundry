@@ -46,10 +46,8 @@ export default function Editor({ projectId }: Props) {
         ) : (
           <div className="h-full flex items-center justify-center">
             <EmptyState
-              icon="✏️"
               title="No file open"
               description="Select a file from the explorer or create a new one to start editing"
-              action={files.length === 0 ? { label: 'Create index.html', onClick: () => {} } : undefined}
             />
           </div>
         )}

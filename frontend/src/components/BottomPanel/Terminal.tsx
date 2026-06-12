@@ -38,7 +38,7 @@ export default function Terminal({ projectId }: Props) {
     <div className="flex h-full flex-col" style={{ background: 'var(--bg-primary)' }}>
       <div className="flex-1 overflow-y-auto p-3 font-mono text-xs leading-relaxed">
         {output.map((line, i) => (
-          <div key={i} style={{ color: line.startsWith('$ ') ? 'var(--accent-green)' : 'var(--text-secondary)' }}>
+          <div key={i} style={{ color: line.startsWith('$ ') ? 'var(--success)' : 'var(--text-secondary)' }}>
             {line.startsWith('$ ') ? <><span style={{ color: 'var(--accent)' }}>$ </span>{line.slice(2)}</> : line}
           </div>
         ))}

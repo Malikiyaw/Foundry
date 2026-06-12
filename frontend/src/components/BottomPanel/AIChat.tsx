@@ -95,7 +95,7 @@ export default function AIChat({ projectId }: Props) {
           setGenProgress(progress.message);
           const msg: Message = {
             role: 'system',
-            content: progress.complete ? `✅ ${progress.message}` : `⏳ ${progress.message}`,
+            content: progress.complete ? `Done: ${progress.message}` : `In progress: ${progress.message}`,
             timestamp: new Date(),
           };
           setMessages((p) => [...p, msg]);
@@ -119,7 +119,7 @@ ${result.playtestResults ? `\n**Playtest Review:**\n${result.playtestResults}` :
 
       setMessages((p) => [...p, { role: 'assistant', content: summary, timestamp: new Date() }]);
     } catch (e: any) {
-      setMessages((p) => [...p, { role: 'system', content: `❌ Generation failed: ${e.message}`, timestamp: new Date() }]);
+      setMessages((p) => [...p, { role: 'system', content: `Failed: ${e.message}`, timestamp: new Date() }]);
     } finally {
       setIsGenerating(false);
       setGenProgress('');
@@ -203,7 +203,7 @@ Include all necessary logic. Make sure the game is fully functional and runnable
         <div className="flex-1" />
         <button
           className="rounded-md px-2 py-1 text-[10px] font-medium transition-all hover:opacity-80"
-          style={{ background: 'var(--gradient-1)', color: 'white' }}
+          style={{ background: 'var(--accent)', color: 'white' }}
           onClick={() => setShowGenerator(!showGenerator)}
         >
           {showGenerator ? 'Cancel' : 'Generate Game'}
@@ -239,7 +239,7 @@ Include all necessary logic. Make sure the game is fully functional and runnable
             />
             <button
               className="rounded-lg px-4 py-2 text-[11px] font-medium transition-all"
-              style={{ background: 'var(--gradient-1)', color: 'white', opacity: (!genPrompt.trim() || isGenerating) ? 0.5 : 1 }}
+              style={{ background: 'var(--accent)', color: 'white', opacity: (!genPrompt.trim() || isGenerating) ? 0.5 : 1 }}
               onClick={handleGenerateGame}
               disabled={!genPrompt.trim() || isGenerating}
             >
@@ -261,7 +261,7 @@ Include all necessary logic. Make sure the game is fully functional and runnable
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {messages.length === 0 && !isStreaming && (
           <div className="flex flex-col items-center justify-center h-full text-center animate-fadeIn">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: 'var(--gradient-1)' }}>
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: 'var(--accent)' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
             </div>
             <h3 className="text-sm font-semibold text-white mb-1">Foundry AI</h3>
@@ -309,7 +309,7 @@ Include all necessary logic. Make sure the game is fully functional and runnable
           <textarea ref={inputRef} className="input-field !resize-none !rounded-xl" rows={2} placeholder="Ask AI to write code, fix bugs, or improve your game..." value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} />
           <button
             className="flex h-[42px] w-[42px] items-center justify-center rounded-xl shrink-0 transition-all"
-            style={{ background: isStreaming ? 'var(--danger)' : 'var(--gradient-1)', opacity: (!input.trim() && !isStreaming) ? 0.5 : 1 }}
+            style={{ background: isStreaming ? 'var(--danger)' : 'var(--accent)', opacity: (!input.trim() && !isStreaming) ? 0.5 : 1 }}
             onClick={isStreaming ? cancelStream : sendMessage}
             disabled={!input.trim() && !isStreaming}
           >

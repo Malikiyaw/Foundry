@@ -14,11 +14,13 @@ export default function Toaster() {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`flex items-center gap-2 rounded px-4 py-2 text-sm shadow-lg cursor-pointer ${
-            toast.type === 'error' ? 'bg-red-600 text-white' :
-            toast.type === 'success' ? 'bg-green-600 text-white' :
-            'bg-[#333] text-[#ccc]'
-          }`}
+          className="flex items-center gap-2 rounded px-4 py-2 text-sm cursor-pointer"
+          style={{
+            background: toast.type === 'error' ? 'var(--danger)' :
+            toast.type === 'success' ? 'var(--success)' :
+            'var(--bg-secondary)',
+            color: 'var(--text-primary)',
+          }}
           onClick={() => dispatch(removeToast(toast.id))}
         >
           {toast.message}

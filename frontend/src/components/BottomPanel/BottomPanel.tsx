@@ -7,10 +7,10 @@ import DiffPanel from './DiffPanel';
 interface Props { projectId: string }
 
 const TABS = [
-  { id: 'terminal', label: 'Terminal', icon: '⊞' },
-  { id: 'console', label: 'Console', icon: '⬚' },
-  { id: 'ai-chat', label: 'AI Chat', icon: '✦' },
-  { id: 'diff', label: 'Diff', icon: '⇄' },
+  { id: 'terminal', label: 'Terminal', icon: '>' },
+  { id: 'console', label: 'Console', icon: '{}' },
+  { id: 'ai-chat', label: 'AI Chat', icon: 'AI' },
+  { id: 'diff', label: 'Diff', icon: '<>' },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
@@ -32,9 +32,8 @@ export default function BottomPanel({ projectId }: Props) {
             onClick={() => setActiveTab(tab.id)}
           >
             {activeTab === tab.id && (
-              <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'var(--gradient-1)' }} />
+              <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'var(--accent)' }} />
             )}
-            <span className="text-[10px]">{tab.icon}</span>
             <span>{tab.label}</span>
           </button>
         ))}

@@ -23,9 +23,13 @@ const FILE_COLORS: Record<string, string> = {
 function FileIcon({ name, isFolder, isExpanded }: { name: string; isFolder?: boolean; isExpanded?: boolean }) {
   if (isFolder) {
     return (
-      <span className="text-xs" style={{ color: isExpanded ? 'var(--accent-orange)' : 'var(--text-muted)' }}>
-        {isExpanded ? '📂' : '📁'}
-      </span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+        {isExpanded ? (
+          <path d="M5 19a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4l2 2h4a2 2 0 0 1 2 2v1M5 19h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2z" />
+        ) : (
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+        )}
+      </svg>
     );
   }
   const ext = name.split('.').pop()?.toLowerCase() || '';

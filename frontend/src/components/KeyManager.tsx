@@ -4,13 +4,13 @@ import { RootState, AppDispatch } from '../store/index';
 import { addKey, removeKey, fetchKeys, toggleKey } from '../store/keysSlice';
 
 const PROVIDERS = [
-  { value: 'openai', label: 'OpenAI', color: '#00A67E', icon: '🟢' },
-  { value: 'anthropic', label: 'Anthropic', color: '#D4A574', icon: '🟤' },
-  { value: 'google', label: 'Google AI', color: '#4285F4', icon: '🔵' },
-  { value: 'replicate', label: 'Replicate', color: '#1B1918', icon: '⬛' },
-  { value: 'stability', label: 'Stability AI', color: '#8B5CF6', icon: '🟣' },
-  { value: 'elevenlabs', label: 'ElevenLabs', color: '#FF6B35', icon: '🟠' },
-  { value: 'openrouter', label: 'OpenRouter', color: '#FF6B35', icon: '🔀' },
+  { value: 'openai', label: 'OpenAI', color: '#00A67E' },
+  { value: 'anthropic', label: 'Anthropic', color: '#D4A574' },
+  { value: 'google', label: 'Google AI', color: '#4285F4' },
+  { value: 'replicate', label: 'Replicate', color: '#1B1918' },
+  { value: 'stability', label: 'Stability AI', color: '#8B5CF6' },
+  { value: 'elevenlabs', label: 'ElevenLabs', color: '#FF6B35' },
+  { value: 'openrouter', label: 'OpenRouter', color: '#FF6B35' },
 ];
 
 export default function KeyManager() {
@@ -33,8 +33,8 @@ export default function KeyManager() {
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
       <div className="mx-auto max-w-4xl px-6 py-12">
         <div className="mb-10">
-          <h1 className="text-3xl font-bold text-white mb-2">API Keys</h1>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <h1 className="text-2xl font-normal text-white mb-1" style={{ fontFamily: "'DM Serif Display', Georgia, serif", letterSpacing: '-0.02em' }}>API Keys</h1>
+          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Keys are encrypted with your passphrase using AES-256-GCM and stored locally.
             AI calls go directly from your browser to the provider — no server involved.
           </p>
@@ -54,10 +54,10 @@ export default function KeyManager() {
           {keys.map((key) => {
             const provider = PROVIDERS.find((p) => p.value === key.provider);
             return (
-              <div key={key.id} className="card flex items-center justify-between hover-lift">
+              <div key={key.id} className="card flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl text-xl" style={{ background: `${provider?.color || '#555'}20` }}>
-                    {provider?.icon || '🔑'}
+                    <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: provider?.color || 'var(--text-muted)' }}>{provider?.value?.slice(0, 2) || '--'}</span>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
@@ -73,7 +73,7 @@ export default function KeyManager() {
                     </div>
                     {key.budgetLimit && (
                       <div className="mt-2 h-1 w-32 rounded-full overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
-                        <div className="h-full rounded-full" style={{ width: `${Math.min(100, (key.usageCount / key.budgetLimit) * 100)}%`, background: 'var(--gradient-1)' }} />
+                        <div className="h-full rounded-full" style={{ width: `${Math.min(100, (key.usageCount / key.budgetLimit) * 100)}%`, background: 'var(--accent)' }} />
                       </div>
                     )}
                   </div>
@@ -91,11 +91,10 @@ export default function KeyManager() {
           })}
 
           {keys.length === 0 && (
-            <div className="flex flex-col items-center justify-center rounded-2xl py-20" style={{ border: '1px dashed var(--border-primary)' }}>
-              <div className="mb-4 text-5xl">🔑</div>
-              <h3 className="text-lg font-semibold text-white mb-1">No API keys</h3>
-              <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>Add a key to start generating games</p>
-              <button className="btn-primary" onClick={() => setModalOpen(true)}>Add Your First Key</button>
+            <div className="flex flex-col items-center justify-center py-20" style={{ border: '1px dashed var(--border-primary)', borderRadius: '8px' }}>
+              <h3 className="text-sm font-medium text-white mb-1">No API keys</h3>
+              <p className="text-xs mb-5" style={{ color: 'var(--text-secondary)' }}>Add a key to start generating games</p>
+              <button className="btn-primary text-xs" onClick={() => setModalOpen(true)}>Add your first key</button>
             </div>
           )}
         </div>
@@ -110,9 +109,8 @@ export default function KeyManager() {
                 <label className="mb-1.5 block text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>Provider</label>
                 <div className="grid grid-cols-4 gap-2">
                   {PROVIDERS.map((p) => (
-                    <button key={p.value} type="button" className="flex flex-col items-center gap-1 rounded-lg p-2 text-[10px] transition-all" style={{ background: newProvider === p.value ? `${p.color}20` : 'var(--bg-tertiary)', border: newProvider === p.value ? `1px solid ${p.color}` : '1px solid transparent', color: newProvider === p.value ? 'var(--text-primary)' : 'var(--text-muted)' }} onClick={() => setNewProvider(p.value)}>
-                      <span className="text-lg">{p.icon}</span>
-                      <span className="truncate w-full text-center">{p.label}</span>
+                    <button key={p.value} type="button" className="flex flex-col items-center gap-1 rounded p-2 text-[10px] transition-all" style={{ background: newProvider === p.value ? `${p.color}20` : 'var(--bg-tertiary)', border: newProvider === p.value ? `1px solid ${p.color}` : '1px solid transparent', color: newProvider === p.value ? 'var(--text-primary)' : 'var(--text-muted)' }} onClick={() => setNewProvider(p.value)}>
+                      <span className="truncate w-full text-center font-medium">{p.label}</span>
                     </button>
                   ))}
                 </div>

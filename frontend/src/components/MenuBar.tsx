@@ -64,9 +64,9 @@ export default function MenuBar({ projectId }: Props) {
   }, []);
 
   return (
-    <div ref={ref} className="flex h-[32px] items-center border-b glass shrink-0" style={{ borderColor: 'var(--border-primary)' }}>
+    <div ref={ref} className="flex h-[32px] items-center border-b shrink-0" style={{ borderColor: 'var(--border-primary)', background: 'var(--bg-secondary)' }}>
       <div className="flex items-center gap-2 px-3 mr-1">
-        <div className="flex h-6 w-6 items-center justify-center rounded-md" style={{ background: 'var(--gradient-1)' }}>
+        <div className="flex h-6 w-6 items-center justify-center rounded-md" style={{ background: 'var(--accent)' }}>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
           </svg>
@@ -87,7 +87,7 @@ export default function MenuBar({ projectId }: Props) {
             {menu.label}
           </button>
           {openMenu === menu.label && (
-            <div className="absolute left-0 top-full z-50 min-w-[220px] py-1.5 animate-scaleIn glass rounded-lg shadow-2xl" style={{ border: '1px solid var(--border-primary)' }}>
+            <div className="absolute left-0 top-full z-50 min-w-[220px] py-1.5 animate-scaleIn rounded-lg" style={{ border: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
               {menu.items.map((item, i) => (
                 <button
                   key={i}

@@ -35,12 +35,12 @@ export default function TabBar({ tabs, activeIndex, onClose, onSelect }: Props) 
             onClick={() => onSelect(i)}
           >
             {isActive && (
-              <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'var(--gradient-1)' }} />
+              <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'var(--accent)' }} />
             )}
             <span className="h-2 w-2 rounded-full shrink-0" style={{ background: dotColor }} />
             <span className="whitespace-nowrap">{tab.path.split('/').pop()}</span>
             {tab.isDirty && (
-              <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: 'var(--accent-orange)' }} title="Unsaved changes" />
+              <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: 'var(--accent)' }} title="Unsaved changes" />
             )}
             <button
               className="ml-1 flex h-4 w-4 items-center justify-center rounded transition-all shrink-0"

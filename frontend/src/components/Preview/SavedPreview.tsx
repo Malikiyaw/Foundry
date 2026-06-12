@@ -26,7 +26,7 @@ export default function SavedPreview({ projectId }: Props) {
     <div className="flex h-full flex-col" style={{ background: 'var(--bg-primary)' }}>
       <div className="flex items-center justify-between border-b px-3 py-2 shrink-0" style={{ borderColor: 'var(--border-primary)', background: 'var(--bg-secondary)' }}>
         <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--accent-green)' }} />
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--success)' }} />
           <span className="text-[11px] font-medium" style={{ color: 'var(--text-primary)' }}>Game Preview</span>
         </div>
         <button onClick={refreshPreview} className="icon-btn !h-6 !w-6" title="Refresh">
@@ -42,7 +42,6 @@ export default function SavedPreview({ projectId }: Props) {
               <div className="h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
             ) : (
               <div className="text-center">
-                <div className="text-3xl mb-2">🎮</div>
                 <p className="text-xs" style={{ color: error ? 'var(--danger)' : 'var(--text-muted)' }}>{error || 'No preview available'}</p>
                 {error && <button onClick={refreshPreview} className="text-[10px] mt-1" style={{ color: 'var(--accent)' }}>Retry</button>}
               </div>
