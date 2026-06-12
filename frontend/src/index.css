@@ -625,6 +625,184 @@ html, body, #root {
   pointer-events: none;
 }
 
+/* === NOISE TEXTURE OVERLAY === */
+.landing-noise {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* === SCROLL PROGRESS BAR === */
+.landing-scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: var(--gradient-1);
+  z-index: 99999;
+  transition: width 0.05s linear;
+  box-shadow: 0 0 10px rgba(108, 92, 231, 0.5), 0 0 20px rgba(108, 92, 231, 0.3);
+}
+
+/* === MOUSE GLOW (HERO) === */
+.landing-mouse-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    800px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(108, 92, 231, 0.08) 0%,
+    rgba(0, 180, 216, 0.04) 25%,
+    transparent 50%
+  );
+}
+
+/* === 3D TILT CARD === */
+.landing-tilt-card {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.landing-tilt-card-inner {
+  transition: transform 0.15s ease-out;
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+/* === SPOTLIGHT ON CARDS === */
+.landing-spotlight {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s;
+  background: radial-gradient(
+    400px circle at var(--card-mx, 50%) var(--card-my, 50%),
+    rgba(108, 92, 231, 0.12) 0%,
+    transparent 50%
+  );
+}
+
+.landing-tilt-card:hover .landing-spotlight {
+  opacity: 1;
+}
+
+/* === MAGNETIC BUTTON === */
+.landing-magnetic-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.landing-magnetic-inner {
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+/* === PIPELINE FLOW ANIMATION === */
+@keyframes flowDash {
+  to { stroke-dashoffset: -40; }
+}
+
+.landing-pipeline-flow {
+  stroke-dasharray: 8 12;
+  animation: flowDash 1.5s linear infinite;
+}
+
+/* === HERO WORD CYCLE === */
+@keyframes wordCycleIn {
+  0% { transform: translateY(20px); opacity: 0; filter: blur(4px); }
+  100% { transform: translateY(0); opacity: 1; filter: blur(0); }
+}
+
+@keyframes wordCycleOut {
+  0% { transform: translateY(0); opacity: 1; filter: blur(0); }
+  100% { transform: translateY(-20px); opacity: 0; filter: blur(4px); }
+}
+
+.landing-cycling-word {
+  display: inline-block;
+  animation: wordCycleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.landing-cycling-word.exiting {
+  animation: wordCycleOut 0.3s cubic-bezier(0.55, 0.06, 0.68, 0.19) both;
+}
+
+/* === NAV SCROLL STATES === */
+.landing-nav-scrolled {
+  background: rgba(10, 10, 15, 0.92) !important;
+  backdrop-filter: blur(30px) !important;
+  -webkit-backdrop-filter: blur(30px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* === PARALLAX ORB DEPTH === */
+.landing-parallax-orb {
+  will-change: transform;
+  transition: transform 0.1s linear;
+}
+
+/* === ANIMATED COUNTER === */
+.landing-counter {
+  font-variant-numeric: tabular-nums;
+}
+
+/* === CARD BORDER GLOW ON HOVER === */
+.landing-feature-card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 17px;
+  background: var(--card-gradient);
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.4s;
+  filter: blur(1px);
+}
+
+.landing-feature-card:hover::after {
+  opacity: 0.3;
+}
+
+/* === HERO SHIMMER TEXT === */
+@keyframes shimmerText {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.landing-shimmer-text {
+  background: linear-gradient(
+    90deg,
+    var(--text-primary) 0%,
+    rgba(108, 92, 231, 0.8) 25%,
+    rgba(0, 180, 216, 0.8) 50%,
+    rgba(108, 92, 231, 0.8) 75%,
+    var(--text-primary) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmerText 6s linear infinite;
+}
+
+@keyframes floatBadge {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.landing-float-badge {
+  animation: floatBadge 3s ease-in-out infinite;
+}
+
 @media (max-width: 768px) {
   .landing-hero-title {
     font-size: clamp(2rem, 8vw, 3.5rem);
@@ -637,5 +815,14 @@ html, body, #root {
     width: 40px;
     height: 2px;
     background: linear-gradient(to right, var(--accent), transparent);
+  }
+  .landing-tilt-card {
+    perspective: none;
+  }
+  .landing-tilt-card-inner {
+    transform: none !important;
+  }
+  .landing-magnetic-inner {
+    transform: none !important;
   }
 }
