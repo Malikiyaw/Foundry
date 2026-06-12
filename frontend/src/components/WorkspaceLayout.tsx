@@ -1,10 +1,11 @@
 import React, { useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Group, Panel, Separator } from 'react-resizable-panels';
 import { AppDispatch, RootState } from '../store/index';
 import { fetchProject } from '../store/projectsSlice';
 import { fetchFiles, clearFiles, addFile } from '../store/filesSlice';
+import { logout } from '../store/authSlice';
 import { Spinner } from './shared/Spinner';
 
 import MenuBar from './MenuBar';
@@ -39,8 +40,10 @@ function HorizontalResizeHandle() {
 export default function WorkspaceLayout() {
   const { id } = useParams<{ id: string }>();
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const { sidebarOpen, bottomPanelOpen, showRightPanel } = useSelector((state: RootState) => state.ui);
   const { isZenMode } = useSelector((state: RootState) => state.editor);
+  const { isDemo } = useSelector((state: RootState) => state.auth);
   const files = useSelector((state: RootState) => state.files.items);
 
   useEffect(() => {
@@ -69,6 +72,18 @@ export default function WorkspaceLayout() {
 
   return (
     <div className="flex h-screen flex-col select-none" style={{ background: 'var(--bg-primary)' }} onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
+      {isDemo && (
+        <div className="flex items-center justify-between gap-3 px-4 py-1.5 text-xs" style={{ background: 'var(--accent-subtle)', borderBottom: '1px solid var(--border-primary)' }}>
+          <span style={{ color: 'var(--accent)' }}>🔍 Demo mode — changes are not saved permanently.</span>
+          <button
+            className="rounded-full px-3 py-0.5 text-[10px] font-medium text-white"
+            style={{ background: 'var(--accent)' }}
+            onClick={() => { dispatch(logout()); navigate('/'); }}
+          >
+            Exit Demo
+          </button>
+        </div>
+      )}
       <MenuBar projectId={id} />
 
       <div className="flex flex-1 overflow-hidden">

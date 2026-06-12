@@ -3,12 +3,14 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { RootState, AppDispatch } from '../store/index';
 import { fetchProjects, createProject, deleteProject } from '../store/projectsSlice';
+import { logout } from '../store/authSlice';
 import { Spinner } from './shared/Spinner';
 
 export default function ProjectList() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { items, loading } = useSelector((s: RootState) => s.projects);
+  const { isDemo } = useSelector((s: RootState) => s.auth);
   const [showNew, setShowNew] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -47,6 +49,21 @@ export default function ProjectList() {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
+      {isDemo && (
+        <div className="flex items-center justify-between gap-3 px-6 py-2.5 text-sm" style={{ background: 'var(--accent-subtle)', borderBottom: '1px solid var(--border-primary)' }}>
+          <div className="flex items-center gap-2">
+            <span className="text-base">🔍</span>
+            <span style={{ color: 'var(--accent)' }}>Demo mode — explore freely. Nothing is saved permanently.</span>
+          </div>
+          <button
+            className="rounded-full px-4 py-1 text-xs font-medium text-white transition-opacity"
+            style={{ background: 'var(--accent)' }}
+            onClick={() => { dispatch(logout()); navigate('/'); }}
+          >
+            Exit Demo
+          </button>
+        </div>
+      )}
       <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="mb-10 flex items-end justify-between">
           <div>

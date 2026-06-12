@@ -17,9 +17,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isUnlocked, hasPassphrase } = useSelector((s: RootState) => s.auth);
+  const { isUnlocked, hasPassphrase, isDemo } = useSelector((s: RootState) => s.auth);
+  if (isDemo || isUnlocked) return <Navigate to="/projects" replace />;
   if (!hasPassphrase) return <Navigate to="/setup" replace />;
-  if (isUnlocked) return <Navigate to="/projects" replace />;
   return <>{children}</>;
 }
 

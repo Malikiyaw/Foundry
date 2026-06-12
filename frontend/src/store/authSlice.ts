@@ -3,9 +3,9 @@ import { db } from '../services/db';
 import { hashPassphrase, hex2buf } from '../services/crypto';
 import { setPassphrase, lock as lockSession } from '../services/session';
 
-interface AuthState { isUnlocked: boolean; hasPassphrase: boolean; loading: boolean; error: string | null }
+interface AuthState { isUnlocked: boolean; hasPassphrase: boolean; isDemo: boolean; loading: boolean; error: string | null }
 
-const initialState: AuthState = { isUnlocked: false, hasPassphrase: false, loading: false, error: null };
+const initialState: AuthState = { isUnlocked: false, hasPassphrase: false, isDemo: false, loading: false, error: null };
 
 export const checkPassphrase = createAsyncThunk('auth/check', async () => {
   const settings = await db.settings.get('main');
@@ -36,8 +36,9 @@ export const unlock = createAsyncThunk('auth/unlock', async ({ passphrase }: { p
 const authSlice = createSlice({
   name: 'auth', initialState,
   reducers: {
-    logout(state) { lockSession(); state.isUnlocked = false; state.error = null; },
+    logout(state) { lockSession(); state.isUnlocked = false; state.isDemo = false; state.error = null; },
     clearError(state) { state.error = null; },
+    enterDemoMode(state) { state.isUnlocked = true; state.isDemo = true; state.error = null; },
   },
   extraReducers: (builder) => {
     builder
@@ -51,5 +52,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { logout, clearError, enterDemoMode } = authSlice.actions;
 export default authSlice.reducer;
