@@ -336,6 +336,118 @@ html, body, #root {
   border: 1.5px solid rgba(108,92,231,0.25);
 }
 
+/* ─── WORKSPACE MOCKUP ─── */
+.lp-mockup {
+  border-radius: 12px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+.lp-mockup-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-tertiary);
+}
+.lp-mockup-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.lp-mockup-body {
+  display: flex;
+  height: 340px;
+}
+.lp-mockup-sidebar {
+  width: 180px;
+  border-right: 1px solid var(--border-primary);
+  padding: 12px;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-size: 11px;
+  background: var(--bg-tertiary);
+}
+.lp-mockup-editor {
+  flex: 1;
+  padding: 16px;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-size: 11px;
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+.lp-mockup-preview {
+  width: 220px;
+  border-left: 1px solid var(--border-primary);
+  padding: 12px;
+  background: var(--bg-tertiary);
+}
+
+/* ─── PIPELINE ─── */
+.lp-pipe {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+.lp-pipe-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 80px;
+}
+.lp-pipe-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  border: 1.5px solid;
+  transition: border-color 0.2s;
+}
+.lp-pipe-line {
+  display: flex;
+  align-items: center;
+  height: 2px;
+  min-width: 40px;
+  position: relative;
+}
+.lp-pipe-line::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.3;
+}
+
+/* ─── TRUST BAR ─── */
+.lp-trust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.lp-trust-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
 @media (max-width: 768px) {
   .lp-bg-glow {
     width: 500px;

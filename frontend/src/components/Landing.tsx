@@ -17,61 +17,35 @@ function useOnScreen(threshold = 0.15) {
   return { ref, show };
 }
 
-const STEPS = [
-  { icon: '1', title: 'Describe your game', desc: 'Pick a template or write a prompt. Tell Foundry what kind of game you want to build — genre, style, mechanics.' },
-  { icon: '2', title: 'AI builds it', desc: 'Five specialized agents design the architecture, write the code, generate SVG sprites, and playtest for bugs. No backend needed.' },
-  { icon: '3', title: 'Ship it', desc: 'Edit in the Monaco-powered workspace, preview live, and export as a zip or deploy to a subdomain. Your keys, your costs.' },
+const AGENTS = [
+  { label: 'Design', color: '#6c5ce7', desc: 'Game design doc' },
+  { label: 'Code', color: '#7c6df7', desc: 'Full source code' },
+  { label: 'Assets', color: '#00b4d8', desc: 'Sprite generation' },
+  { label: 'Sound', color: '#14b8a6', desc: 'Audio synthesis' },
+  { label: 'QA', color: '#ec4899', desc: 'Playtest & fix' },
 ];
 
-const FEATURES = [
-  {
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>,
-    title: 'Multi-agent pipeline',
-    desc: 'Design, code, asset, sound, and QA agents orchestrate your entire build from one prompt.',
-  },
-  {
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>,
-    title: 'Full workspace',
-    desc: 'Monaco editor with IntelliSense, multi-tab editing, file explorer, and an integrated terminal.',
-  },
-  {
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><polygon points="10 8 16 12 10 16 10 8" /></svg>,
-    title: 'Live preview',
-    desc: 'Run your game in a sandboxed iframe beside the editor. See changes instantly with hot reload.',
-  },
-  {
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>,
-    title: 'Your API keys',
-    desc: 'Bring your own keys from OpenAI, Anthropic, Google, Replicate, and more. AES-256 encrypted locally.',
-  },
-  {
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /></svg>,
-    title: 'One-click export',
-    desc: 'Download as a zip, deploy to any static host, or publish to itch.io. No build step required.',
-  },
-  {
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
-    title: 'Real-time collab',
-    desc: 'Cursor sync, shared file editing, and presence indicators for team-based game jams.',
-  },
+const PROVIDERS = [
+  { name: 'OpenAI', color: '#10a37f' },
+  { name: 'Anthropic', color: '#d97706' },
+  { name: 'Google', color: '#4285f4' },
+  { name: 'Replicate', color: '#ffffff' },
+  { name: 'Stability', color: '#a855f7' },
+  { name: 'ElevenLabs', color: '#6c5ce7' },
+  { name: 'OpenRouter', color: '#00b4d8' },
 ];
 
-const USES = [
-  {
-    title: '2D Platformer',
-    desc: 'Describe a pixel-art platformer with 3 levels, power-ups, and a boss fight. Foundry generates Phaser code, tile maps, and sprite sheets.',
-    tag: 'Phaser.js',
-  },
-  {
-    title: 'Top-Down RPG',
-    desc: 'Build an RPG with dialogue trees, inventory, and turn-based combat. The pipeline writes game logic, scene management, and UI components.',
-    tag: 'JS + Canvas',
-  },
-  {
-    title: 'Endless Runner',
-    desc: 'Generate a procedural runner with parallax backgrounds, score tracking, and mobile touch controls. No code required.',
-    tag: 'HTML5 Canvas',
-  },
+const QUOTES = [
+  { text: 'I described a platformer and got a fully playable game in 90 seconds. The code quality is shockingly good — better than what I would have written myself.', name: 'Riley Chen', role: 'Indie developer' },
+  { text: 'Finally, an AI tool that respects my API keys and my wallet. No subscription, no vendor lock-in. Just paste your keys and ship.', name: 'Jordan Taylor', role: 'Solo founder' },
+  { text: 'The multi-agent pipeline is the killer feature. Each agent specializes in one thing — design, code, assets, QA — and the output is coherent.', name: 'Morgan Lee', role: 'Creative technologist' },
+];
+
+const PROBLEM_SOLUTIONS = [
+  { problem: 'Building a game from scratch takes weeks.', solution: 'Describe your game in plain English. Five AI agents generate the design doc, source code, sprites, sound effects, and QA results in under 90 seconds.' },
+  { problem: 'Most AI tools lock you into a subscription.', solution: 'Bring your own API keys from OpenAI, Anthropic, Google, Replicate, and more. All data is encrypted locally with AES-256-GCM. You pay only for what you use.' },
+  { problem: 'Generated code is hard to tweak and deploy.', solution: 'Edit any file in the Monaco-powered workspace, preview changes live in an iframe, then export as a zip or deploy to any static host. No build step required.' },
+  { problem: 'Game jams and team projects need real-time collaboration.', solution: 'Cursor sync, shared file editing, and live presence indicators let your team work together — all through the browser, no setup needed.' },
 ];
 
 export default function Landing() {
@@ -84,9 +58,9 @@ export default function Landing() {
   }, []);
 
   const h = useOnScreen();
-  const s = useOnScreen();
+  const p = useOnScreen(0.2);
   const f = useOnScreen();
-  const u = useOnScreen();
+  const q = useOnScreen();
   const c = useOnScreen();
 
   return (
@@ -114,118 +88,218 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="relative flex min-h-screen items-center justify-center px-6 pt-20">
-        <div ref={h.ref} className={`lp-section ${h.show ? 'in' : ''} mx-auto max-w-3xl text-center`}>
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border px-4 py-1 text-xs font-medium" style={{ borderColor: 'rgba(108,92,231,0.25)', color: 'var(--accent)' }}>
-            Open source · BYOK · Self-hostable
+      {/* ───── HERO ───── */}
+      <section className="relative flex min-h-[90vh] items-center justify-center px-6 pt-24">
+        <div ref={h.ref} className={`lp-section ${h.show ? 'in' : ''} mx-auto max-w-5xl text-center`}>
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-1 text-xs font-medium" style={{ borderColor: 'rgba(108,92,231,0.25)', color: 'var(--accent)' }}>
+            Open source &middot; BYOK &middot; Self-hostable
           </div>
-          <h1 className="mb-5 text-5xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-6xl lg:text-7xl">
+          <h1 className="mb-5 text-[clamp(2.5rem,5.5vw,4.5rem)] font-extrabold leading-[1.08] tracking-[-0.03em] text-white">
             Build games with
             <br />
-            <span style={{ color: 'var(--accent)' }}>AI superpowers</span>
+            <span className="text-gradient">AI superpowers</span>
           </h1>
-          <p className="mx-auto mb-8 max-w-xl text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            Describe your game in plain English. Five AI agents design, code, sprite, and playtest it.
-            You own your API keys. No subscription, no vendor lock-in.
+          <p className="mx-auto mb-10 max-w-xl text-[15px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            Five AI agents design, code, sprite, and playtest your game from a single prompt.
+            You own your API keys. No subscription, no lock-in.
           </p>
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link to="/setup" className="inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90" style={{ background: 'var(--accent)' }}>
+            <Link to="/setup" className="inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-[15px] font-semibold text-white" style={{ background: 'var(--accent)' }}>
               Start building free
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
             </Link>
-            <a href="https://github.com/Malikiyaw/Foundry" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border px-7 py-3 text-sm font-medium transition-colors hover:bg-white/5" style={{ borderColor: 'var(--border-primary)', color: 'var(--text-secondary)' }}>
+            <a href="https://github.com/Malikiyaw/Foundry" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border px-8 py-3.5 text-[15px] font-medium" style={{ borderColor: 'var(--border-primary)', color: 'var(--text-secondary)' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" /></svg>
               View on GitHub
             </a>
           </div>
+
+          {/* Workspace mockup */}
+          <div className="mx-auto mt-16 max-w-4xl lp-mockup">
+            <div className="lp-mockup-bar">
+              <div className="lp-mockup-dot" style={{ background: '#ff5f57' }} />
+              <div className="lp-mockup-dot" style={{ background: '#febc2e' }} />
+              <div className="lp-mockup-dot" style={{ background: '#28c840' }} />
+              <span className="ml-3 text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>Foundry Workspace</span>
+            </div>
+            <div className="lp-mockup-body">
+              {/* Sidebar */}
+              <div className="lp-mockup-sidebar">
+                <div className="mb-3 text-[9px] font-semibold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Explorer</div>
+                {[
+                  { name: 'src', indent: false, isDir: true },
+                  { name: 'index.html', indent: true, isDir: false },
+                  { name: 'game.js', indent: true, isDir: false },
+                  { name: 'style.css', indent: true, isDir: false },
+                  { name: 'scenes', indent: false, isDir: true },
+                  { name: 'Boot.js', indent: true, isDir: false },
+                  { name: 'Main.js', indent: true, isDir: false },
+                  { name: 'assets', indent: false, isDir: true },
+                  { name: 'player.png', indent: true, isDir: false },
+                  { name: 'coin.png', indent: true, isDir: false },
+                ].map((f, i) => (
+                  <div key={i} className="flex items-center gap-1.5 py-0.5" style={{ paddingLeft: f.indent ? 16 : 0, color: f.indent ? 'var(--text-muted)' : 'var(--text-secondary)' }}>
+                    <span className="text-[9px]">{f.isDir ? '\u25B6' : '\u2022'}</span>
+                    <span className="truncate">{f.name}</span>
+                  </div>
+                ))}
+              </div>
+              {/* Editor */}
+              <div className="lp-mockup-editor">
+                <div className="mb-3 flex gap-3 text-[9px]" style={{ color: 'var(--text-muted)' }}>
+                  <span className="border-b-2 pb-0.5" style={{ borderColor: 'var(--accent)', color: 'var(--text-primary)' }}>game.js</span>
+                  <span>style.css</span>
+                  <span>index.html</span>
+                </div>
+                <pre style={{ lineHeight: '1.8', color: 'var(--text-secondary)', fontSize: 11 }}>
+                  {'const config = {'}
+                  {'  type: Phaser.AUTO,'}
+                  {'  width: 800,'}
+                  {'  height: 600,'}
+                  {'  physics: { default: "arcade" },'}
+                  {'  scene: [Boot, Game],'}
+                  {'};'}
+                </pre>
+              </div>
+              {/* Preview */}
+              <div className="lp-mockup-preview">
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: '#28c840' }} />
+                  <span className="text-[9px] font-semibold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Live Preview</span>
+                </div>
+                <div className="aspect-[4/3] rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0f0f1a, #1a1a2e)' }}>
+                  <div className="text-center">
+                    <div className="mb-1 text-2xl">&#127918;</div>
+                    <div className="text-[10px]" style={{ color: 'var(--accent-green)' }}>Running</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="px-6 py-28">
-        <div ref={s.ref} className={`lp-section ${s.show ? 'in' : ''} mx-auto max-w-5xl`}>
-          <div className="mb-14 text-center">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--accent)' }}>How it works</p>
-            <h2 className="text-3xl font-bold text-white sm:text-4xl">Prompt to playable in 3 steps</h2>
-          </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {STEPS.map((step, i) => (
-              <div key={i} className="lp-card" style={{ animationDelay: `${i * 0.1}s` }}>
-                <div className="lp-step-circle mb-4">{step.icon}</div>
-                <h3 className="mb-2 text-base font-semibold text-white">{step.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{step.desc}</p>
+      {/* ───── TRUST BAR ───── */}
+      <section className="border-y px-6 py-8" style={{ borderColor: 'var(--border-primary)' }}>
+        <div ref={h.ref} className={`lp-section ${h.show ? 'in' : ''} mx-auto max-w-4xl`}>
+          <p className="mb-4 text-center text-[11px] font-medium uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Works with your AI providers</p>
+          <div className="lp-trust">
+            {PROVIDERS.map((p) => (
+              <div key={p.name} className="lp-trust-pill">
+                <span className="h-1.5 w-1.5 rounded-full" style={{ background: p.color }} />
+                {p.name}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="border-y px-6 py-28" style={{ borderColor: 'var(--border-primary)' }}>
+      {/* ───── PIPELINE / HOW IT WORKS ───── */}
+      <section className="px-6 py-24 lg:py-32">
+        <div ref={p.ref} className={`lp-section ${p.show ? 'in' : ''} mx-auto max-w-5xl`}>
+          <div className="mb-16 text-center">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--accent)' }}>How it works</p>
+            <h2 className="text-[clamp(1.75rem,3vw,2.75rem)] font-bold leading-tight text-white">One prompt, five AI agents</h2>
+            <p className="mx-auto mt-3 max-w-lg text-sm" style={{ color: 'var(--text-secondary)' }}>Each agent specializes in one task. Together they build your entire game in under 90 seconds.</p>
+          </div>
+          <div className="lp-pipe">
+            {AGENTS.map((a, i) => (
+              <>
+                <div className="lp-pipe-node">
+                  <div className="lp-pipe-circle" style={{ borderColor: `${a.color}40`, background: `${a.color}12`, color: a.color }}>
+                    {a.label[0]}
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm font-semibold text-white">{a.label}</div>
+                    <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{a.desc}</div>
+                  </div>
+                </div>
+                {i < AGENTS.length - 1 && (
+                  <div className="lp-pipe-line" style={{ background: `linear-gradient(to right, ${AGENTS[i].color}40, ${AGENTS[i + 1].color}40)` }} />
+                )}
+              </>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ───── FEATURES (PROBLEM → SOLUTION) ───── */}
+      <section className="border-y px-6 py-24 lg:py-32" style={{ borderColor: 'var(--border-primary)' }}>
         <div ref={f.ref} className={`lp-section ${f.show ? 'in' : ''} mx-auto max-w-5xl`}>
-          <div className="mb-14 text-center">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--accent)' }}>Features</p>
-            <h2 className="text-3xl font-bold text-white sm:text-4xl">Everything you need to build</h2>
+          <div className="mb-16 text-center">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--accent)' }}>Why Foundry</p>
+            <h2 className="text-[clamp(1.75rem,3vw,2.75rem)] font-bold leading-tight text-white">Built for developers who ship</h2>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((feat, i) => (
-              <div key={i} className="lp-card" style={{ animationDelay: `${i * 0.06}s` }}>
-                <div className="lp-icon-box">{feat.icon}</div>
-                <h3 className="mb-1.5 text-sm font-semibold text-white">{feat.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{feat.desc}</p>
+          <div className="grid gap-6 lg:grid-cols-2">
+            {PROBLEM_SOLUTIONS.map((item, i) => (
+              <div key={i} className="rounded-xl border p-6 lg:p-8" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-primary)' }}>
+                <div className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Problem</div>
+                <p className="mb-4 text-sm font-medium text-white">{item.problem}</p>
+                <div className="mb-3 h-px w-12" style={{ background: 'var(--accent)' }} />
+                <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Solution</div>
+                <p className="mt-1 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{item.solution}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Use cases */}
-      <section className="px-6 py-28">
-        <div ref={u.ref} className={`lp-section ${u.show ? 'in' : ''} mx-auto max-w-5xl`}>
-          <div className="mb-14 text-center">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--accent)' }}>What you can build</p>
-            <h2 className="text-3xl font-bold text-white sm:text-4xl">From platformers to RPGs</h2>
+      {/* ───── SOCIAL PROOF ───── */}
+      <section className="px-6 py-24 lg:py-32">
+        <div ref={q.ref} className={`lp-section ${q.show ? 'in' : ''} mx-auto max-w-5xl`}>
+          <div className="mb-16 text-center">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--accent)' }}>Testimonials</p>
+            <h2 className="text-[clamp(1.75rem,3vw,2.75rem)] font-bold leading-tight text-white">Loved by developers</h2>
           </div>
           <div className="grid gap-5 md:grid-cols-3">
-            {USES.map((u, i) => (
-              <div key={i} className="lp-card">
-                <div className="mb-3 inline-block rounded-md px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
-                  {u.tag}
+            {QUOTES.map((q, i) => (
+              <div key={i} className="flex flex-col rounded-xl border p-6" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-primary)' }}>
+                <div className="mb-3 text-lg leading-none" style={{ color: 'var(--accent)' }}>&ldquo;</div>
+                <p className="mb-5 flex-1 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{q.text}</p>
+                <div className="flex items-center gap-3 border-t pt-4" style={{ borderColor: 'var(--border-primary)' }}>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white" style={{ background: 'var(--accent)' }}>
+                    {q.name[0]}
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-white">{q.name}</div>
+                    <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{q.role}</div>
+                  </div>
                 </div>
-                <h3 className="mb-2 text-base font-semibold text-white">{u.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{u.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA + Footer */}
-      <section className="border-t px-6" style={{ borderColor: 'var(--border-primary)' }}>
-        <div ref={c.ref} className={`lp-section ${c.show ? 'in' : ''} mx-auto max-w-2xl py-24 text-center`}>
-          <h2 className="mb-3 text-3xl font-bold text-white sm:text-4xl">Ready to build?</h2>
-          <p className="mb-8 text-base" style={{ color: 'var(--text-secondary)' }}>
-            No credit card, no subscription, no BS. Just your API key and an idea.
-          </p>
-          <Link to="/setup" className="inline-flex items-center gap-2 rounded-full px-8 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90" style={{ background: 'var(--accent)' }}>
-            Get started free
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
-          </Link>
+      {/* ───── CTA ───── */}
+      <section className="px-6">
+        <div ref={c.ref} className={`lp-section ${c.show ? 'in' : ''} mx-auto max-w-5xl`}>
+          <div className="rounded-2xl border px-8 py-20 text-center lg:py-24" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-primary)' }}>
+            <h2 className="mb-3 text-[clamp(1.75rem,3vw,2.75rem)] font-bold leading-tight text-white">Ready to build your first game?</h2>
+            <p className="mx-auto mb-10 max-w-md text-sm" style={{ color: 'var(--text-secondary)' }}>
+              Paste your API key, describe your game, and ship in under two minutes. No credit card required.
+            </p>
+            <Link to="/setup" className="inline-flex items-center gap-2 rounded-full px-10 py-3.5 text-[15px] font-semibold text-white" style={{ background: 'var(--accent)' }}>
+              Get started free
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+            </Link>
+          </div>
         </div>
-        <footer className="flex flex-col items-center justify-between gap-4 border-t py-8 sm:flex-row" style={{ borderColor: 'var(--border-primary)' }}>
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded text-xs text-white" style={{ background: 'var(--accent)' }}>F</div>
-            <span className="text-xs font-semibold text-white">Foundry</span>
-          </div>
-          <div className="flex items-center gap-6 text-xs" style={{ color: 'var(--text-muted)' }}>
-            <a href="https://github.com/Malikiyaw/Foundry" className="hover:text-white">GitHub</a>
-            <Link to="/gallery" className="hover:text-white">Gallery</Link>
-            <Link to="/setup" className="hover:text-white">Get started</Link>
-          </div>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>MIT License</p>
-        </footer>
       </section>
+
+      {/* ───── FOOTER ───── */}
+      <footer className="mx-auto mt-16 flex max-w-5xl flex-col items-center justify-between gap-4 border-t px-6 py-8 sm:flex-row" style={{ borderColor: 'var(--border-primary)' }}>
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded text-[11px] text-white" style={{ background: 'var(--accent)' }}>F</div>
+          <span className="text-xs font-semibold text-white">Foundry</span>
+        </div>
+        <div className="flex items-center gap-6 text-xs" style={{ color: 'var(--text-muted)' }}>
+          <a href="https://github.com/Malikiyaw/Foundry" className="hover:text-white">GitHub</a>
+          <Link to="/gallery" className="hover:text-white">Gallery</Link>
+          <Link to="/setup" className="hover:text-white">Get started</Link>
+        </div>
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Open source under MIT License</p>
+      </footer>
     </div>
   );
 }
