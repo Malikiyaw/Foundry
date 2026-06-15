@@ -73,11 +73,10 @@ export default function WorkspaceLayout() {
   return (
     <div className="flex h-screen flex-col select-none" style={{ background: 'var(--bg-primary)' }} onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
       {isDemo && (
-        <div className="flex items-center justify-between gap-3 px-4 py-1.5 text-xs" style={{ background: 'var(--accent-subtle)', borderBottom: '1px solid var(--border-primary)' }}>
+        <div className="flex items-center justify-between gap-3 px-4 py-1.5 text-xs animate-fadeInDown" style={{ background: 'var(--accent-subtle)', borderBottom: '1px solid var(--border-primary)' }}>
           <span style={{ color: 'var(--accent)' }}>Demo mode — changes are not saved permanently.</span>
           <button
-            className="rounded-full px-3 py-0.5 text-[10px] font-medium text-white"
-            style={{ background: 'var(--accent)' }}
+            className="btn-primary btn-xs rounded-full"
             onClick={() => { dispatch(logout()); navigate('/'); }}
           >
             Exit Demo

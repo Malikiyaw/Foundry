@@ -40,6 +40,15 @@ const FEATURES = [
   { problem: 'Game jams and team projects need real-time collaboration, but most AI tools are single-player.', solution: 'Sync cursors, share file editing, and see live presence indicators. Everything works through the browser with no setup.' },
 ];
 
+function ArrowRight() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
+  );
+}
+
 export default function Landing() {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
@@ -67,10 +76,10 @@ export default function Landing() {
             <span className="text-sm font-medium text-white tracking-tight">Foundry</span>
           </div>
           <div className="flex items-center gap-5">
-            <Link to="/gallery" className="text-xs" style={{ color: 'var(--text-secondary)' }}>Gallery</Link>
-            <a href="https://github.com/Malikiyaw/Foundry" className="text-xs" style={{ color: 'var(--text-secondary)' }}>GitHub</a>
-            <Link to="/setup" className="text-xs font-medium text-white" style={{ background: 'var(--accent)', padding: '6px 16px', borderRadius: '4px' }}>
-              Get started
+            <Link to="/gallery" className="text-xs transition-colors" style={{ color: 'var(--text-secondary)' }} onMouseOver={e => (e.target as HTMLElement).style.color = 'var(--text-primary)'} onMouseOut={e => (e.target as HTMLElement).style.color = 'var(--text-secondary)'}>Gallery</Link>
+            <a href="https://github.com/Malikiyaw/Foundry" className="text-xs transition-colors" style={{ color: 'var(--text-secondary)' }} onMouseOver={e => (e.target as HTMLElement).style.color = 'var(--text-primary)'} onMouseOut={e => (e.target as HTMLElement).style.color = 'var(--text-secondary)'}>GitHub</a>
+            <Link to="/setup" className="btn-primary btn-sm">
+              Get started <ArrowRight />
             </Link>
           </div>
         </div>
@@ -84,18 +93,17 @@ export default function Landing() {
               <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.15em]" style={{ color: 'var(--accent)' }}>Open source</p>
               <h1 className="mb-5 text-[clamp(2.25rem,5vw,4rem)] font-normal leading-[1.08] tracking-[-0.02em] text-white">
                 Build games with<br />
-                <span style={{ color: 'var(--accent)' }}>AI agents</span>
+                <span className="text-gradient">AI agents</span>
               </h1>
               <p className="mb-8 max-w-md text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 Five AI agents design, code, sprite, and playtest your game from a single prompt.
                 You own your API keys. No subscription, no lock-in.
               </p>
               <div className="flex flex-wrap items-center gap-4">
-                <Link to="/setup" className="flex items-center gap-1.5 text-sm font-medium text-white" style={{ background: 'var(--accent)', padding: '10px 24px', borderRadius: '4px' }}>
-                  Start building
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+                <Link to="/setup" className="btn-primary">
+                  Start building <ArrowRight />
                 </Link>
-                <Link to="/setup" className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                <Link to="/setup" className="btn-ghost">
                   Try the demo
                 </Link>
               </div>
@@ -126,18 +134,21 @@ export default function Landing() {
                       <span>style.css</span>
                     </div>
                     <pre style={{ lineHeight: 1.8, color: 'var(--text-muted)' }}>
-                      {'const game = {'}
-                      {'  type: Phaser.AUTO,'}
-                      {'  width: 800,'}
-                      {'  height: 600,'}
-                      {'  scene: [Boot, Play],'}
-                      {'};'}
+                      <span>{'const game = {'}</span>
+                      <span>{'  type: Phaser.AUTO,'}</span>
+                      <span>{'  width: 800,'}</span>
+                      <span>{'  height: 600,'}</span>
+                      <span>{'  scene: [Boot, Play],'}</span>
+                      <span>{'};'}<span className="lp-mockup-cursor" /></span>
                     </pre>
                   </div>
                   <div className="lp-mockup-preview">
                     <div className="mb-2 text-[8px] font-medium uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Preview</div>
                     <div className="aspect-[4/3] flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
-                      <span className="text-[10px]" style={{ color: 'var(--success)' }}>Running</span>
+                      <span className="text-[10px] flex items-center gap-1.5" style={{ color: 'var(--success)' }}>
+                        <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--success)' }} />
+                        Running
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -151,7 +162,7 @@ export default function Landing() {
       <section className="border-t border-b px-6 py-8" style={{ borderColor: 'var(--border-primary)' }}>
         <div ref={heroRef.ref} className={`lp-section ${heroRef.show ? 'in' : ''} mx-auto max-w-4xl`}>
           <p className="mb-4 text-center text-[10px] font-medium uppercase tracking-[0.15em]" style={{ color: 'var(--text-muted)' }}>Supported AI providers</p>
-          <div className="lp-trust">
+          <div className="lp-section-stagger lp-trust">
             {PROVIDERS.map((p) => (
               <div key={p} className="lp-trust-pill">{p}</div>
             ))}
@@ -162,28 +173,30 @@ export default function Landing() {
       {/* ─── PIPELINE ─── */}
       <section className="px-6 py-24 lg:py-28">
         <div ref={pipelineRef.ref} className={`lp-section ${pipelineRef.show ? 'in' : ''} mx-auto max-w-5xl`}>
-          <div className="mb-14">
+          <div className="mb-14 text-center">
             <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.15em]" style={{ color: 'var(--accent)' }}>How it works</p>
             <h2 className="text-[clamp(1.5rem,2.5vw,2.5rem)] font-normal text-white">One prompt, five agents</h2>
           </div>
-          <div className="lp-pipe">
+          <div className="lp-pipe lp-section-stagger">
             {AGENTS.map((a, i) => (
-              <>
-                <div className="lp-pipe-node">
-                  <div className="lp-pipe-circle" style={{ borderColor: `${a.color}40` }}>
-                    <span style={{ color: a.color }}>{i + 1}</span>
+              <div key={a.label}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div className="lp-pipe-node">
+                    <div className="lp-pipe-circle" style={{ borderColor: `${a.color}40` }}>
+                      <span style={{ color: a.color }}>{i + 1}</span>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs font-medium text-white">{a.label}</div>
+                      <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{a.desc}</div>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-xs font-medium text-white">{a.label}</div>
-                    <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{a.desc}</div>
-                  </div>
+                  {i < AGENTS.length - 1 && (
+                    <div className="lp-pipe-line" style={{ background: 'var(--border-primary)' }}>
+                      <div style={{ background: 'var(--border-primary)' }} />
+                    </div>
+                  )}
                 </div>
-                {i < AGENTS.length - 1 && (
-                  <div className="lp-pipe-line" style={{ background: 'var(--border-primary)' }}>
-                    <div style={{ background: 'var(--border-primary)' }} />
-                  </div>
-                )}
-              </>
+              </div>
             ))}
           </div>
         </div>
@@ -192,19 +205,27 @@ export default function Landing() {
       {/* ─── FEATURES ─── */}
       <section className="border-t border-b px-6 py-24 lg:py-28" style={{ borderColor: 'var(--border-primary)' }}>
         <div ref={featuresRef.ref} className={`lp-section ${featuresRef.show ? 'in' : ''} mx-auto max-w-5xl`}>
-          <div className="mb-14">
+          <div className="mb-14 text-center">
             <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.15em]" style={{ color: 'var(--accent)' }}>Why Foundry</p>
             <h2 className="text-[clamp(1.5rem,2.5vw,2.5rem)] font-normal text-white">Built for developers who ship</h2>
           </div>
-          <div className="grid gap-10 lg:gap-14">
+          <div className="grid gap-10 lg:gap-14 lp-section-stagger">
             {FEATURES.map((item, i) => (
-              <div key={i} className="grid gap-6 lg:grid-cols-2 lg:gap-12">
+              <div key={i} className="card-subtle grid gap-6 lg:grid-cols-2 lg:gap-12">
                 <div className={i % 2 === 0 ? 'lg:order-1' : 'lg:order-2'}>
-                  <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>Problem</p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-medium" style={{ background: 'var(--danger-subtle)', color: 'var(--danger)' }}>!</span>
+                    <p className="text-[10px] font-medium uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>Problem</p>
+                  </div>
                   <p className="text-sm leading-relaxed text-white">{item.problem}</p>
                 </div>
                 <div className={i % 2 === 0 ? 'lg:order-2' : 'lg:order-1'}>
-                  <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.12em]" style={{ color: 'var(--accent)' }}>Solution</p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-medium" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                    </span>
+                    <p className="text-[10px] font-medium uppercase tracking-[0.12em]" style={{ color: 'var(--accent)' }}>Solution</p>
+                  </div>
                   <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{item.solution}</p>
                 </div>
               </div>
@@ -216,15 +237,15 @@ export default function Landing() {
       {/* ─── TESTIMONIALS ─── */}
       <section className="px-6 py-24 lg:py-28">
         <div ref={quotesRef.ref} className={`lp-section ${quotesRef.show ? 'in' : ''} mx-auto max-w-5xl`}>
-          <div className="mb-14">
+          <div className="mb-14 text-center">
             <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.15em]" style={{ color: 'var(--accent)' }}>Testimonials</p>
             <h2 className="text-[clamp(1.5rem,2.5vw,2.5rem)] font-normal text-white">Used by developers</h2>
           </div>
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-3 lp-section-stagger">
             {QUOTES.map((q, i) => (
-              <div key={i}>
+              <div key={i} className="card-subtle flex flex-col justify-between">
                 <p className="mb-4 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{q.text}</p>
-                <div>
+                <div className="border-t pt-3" style={{ borderColor: 'var(--border-subtle)' }}>
                   <p className="text-xs font-medium text-white">{q.name}</p>
                   <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{q.role}</p>
                 </div>
@@ -236,15 +257,14 @@ export default function Landing() {
 
       {/* ─── CTA ─── */}
       <section className="px-6 pb-24">
-        <div ref={ctaRef.ref} className={`lp-section ${ctaRef.show ? 'in' : ''} mx-auto max-w-5xl`}>
-          <div className="border-t pt-16 text-center" style={{ borderColor: 'var(--border-primary)' }}>
+        <div ref={ctaRef.ref} className={`lp-section ${ctaRef.show ? 'in' : ''} mx-auto max-w-3xl`}>
+          <div className="card-subtle border-accent/10 text-center px-8 py-16" style={{ borderColor: 'rgba(217,119,6,0.15)' }}>
             <h2 className="mb-3 text-[clamp(1.5rem,2.5vw,2.5rem)] font-normal text-white">Ready to build your first game?</h2>
             <p className="mx-auto mb-8 max-w-sm text-sm" style={{ color: 'var(--text-secondary)' }}>
               Paste your API key, describe your game, and ship in under two minutes.
             </p>
-            <Link to="/setup" className="inline-flex items-center gap-1.5 text-sm font-medium text-white" style={{ background: 'var(--accent)', padding: '10px 28px', borderRadius: '4px' }}>
-              Get started
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+            <Link to="/setup" className="btn-primary glow-hover">
+              Get started <ArrowRight />
             </Link>
           </div>
         </div>
@@ -257,9 +277,9 @@ export default function Landing() {
           <span className="text-xs font-medium text-white">Foundry</span>
         </div>
         <div className="flex items-center gap-5 text-xs" style={{ color: 'var(--text-muted)' }}>
-          <a href="https://github.com/Malikiyaw/Foundry">GitHub</a>
-          <Link to="/gallery">Gallery</Link>
-          <Link to="/setup">Get started</Link>
+          <a href="https://github.com/Malikiyaw/Foundry" className="transition-colors hover:text-white">GitHub</a>
+          <Link to="/gallery" className="transition-colors hover:text-white">Gallery</Link>
+          <Link to="/setup" className="transition-colors hover:text-white">Get started</Link>
         </div>
         <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>MIT License</p>
       </footer>

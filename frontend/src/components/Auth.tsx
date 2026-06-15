@@ -91,10 +91,10 @@ function AuthLayout({ children, title, subtitle }: { children: React.ReactNode; 
           </svg>
           <span className="text-lg font-medium text-white tracking-tight">Foundry</span>
         </div>
-        <h1 className="mb-3 font-normal leading-tight text-white" style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 'clamp(1.75rem, 2.5vw, 2.5rem)', letterSpacing: '-0.02em' }}>
+        <h1 className="mb-3 font-normal leading-tight text-white animate-fadeInUp" style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 'clamp(1.75rem, 2.5vw, 2.5rem)', letterSpacing: '-0.02em' }}>
           {title}
         </h1>
-        <p className="mb-10 max-w-sm text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+        <p className="mb-10 max-w-sm text-sm leading-relaxed animate-fadeInUp" style={{ color: 'var(--text-secondary)', animationDelay: '0.1s' }}>
           {subtitle}
         </p>
         <div className="space-y-4">
@@ -103,9 +103,9 @@ function AuthLayout({ children, title, subtitle }: { children: React.ReactNode; 
             { label: 'No server', desc: 'Works completely offline' },
             { label: 'Encrypted', desc: 'Your passphrase protects all API keys' },
             { label: 'Portable', desc: 'Export and import your data anytime' },
-          ].map((item) => (
-            <div key={item.label} className="flex items-center gap-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <span className="h-1 w-1 rounded-full" style={{ background: 'var(--accent)' }} />
+          ].map((item, i) => (
+            <div key={item.label} className="flex items-center gap-3 text-sm animate-fadeInUp" style={{ color: 'var(--text-secondary)', animationDelay: `${0.2 + i * 0.08}s` }}>
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--accent)' }} />
               <div>
                 <span className="font-medium text-white">{item.label}</span>
                 <span className="ml-2">{item.desc}</span>
@@ -182,12 +182,12 @@ export function SetupPage() {
         </div>
 
         {error && (
-          <div className="rounded px-3 py-2 text-xs" style={{ background: 'var(--danger-subtle)', color: 'var(--danger)' }}>
+          <div className="rounded px-3 py-2 text-xs animate-scaleIn" style={{ background: 'var(--danger-subtle)', color: 'var(--danger)' }}>
             {error}
           </div>
         )}
 
-        <button type="submit" disabled={loading} className="btn-primary w-full">
+        <button type="submit" disabled={loading} className="btn-primary w-full justify-center">
           {loading ? 'Setting up...' : 'Secure workspace'}
         </button>
       </form>
@@ -197,7 +197,7 @@ export function SetupPage() {
         <div className="relative flex justify-center text-xs" style={{ color: 'var(--text-muted)' }}><span className="px-2" style={{ background: 'var(--bg-primary)' }}>or</span></div>
       </div>
 
-      <button disabled={demoLoading} className="btn-ghost w-full text-xs" onClick={handleDemo}>
+      <button disabled={demoLoading} className="btn-ghost w-full justify-center" onClick={handleDemo}>
         {demoLoading ? 'Setting up demo...' : 'Explore demo (no passphrase needed)'}
       </button>
     </AuthLayout>
@@ -255,12 +255,12 @@ export function UnlockPage() {
         </div>
 
         {error && (
-          <div className="rounded px-3 py-2 text-xs" style={{ background: 'var(--danger-subtle)', color: 'var(--danger)' }}>
+          <div className="rounded px-3 py-2 text-xs animate-scaleIn" style={{ background: 'var(--danger-subtle)', color: 'var(--danger)' }}>
             {error}
           </div>
         )}
 
-        <button type="submit" disabled={loading} className="btn-primary w-full">
+        <button type="submit" disabled={loading} className="btn-primary w-full justify-center">
           {loading ? 'Unlocking...' : 'Unlock'}
         </button>
       </form>
@@ -270,12 +270,12 @@ export function UnlockPage() {
         <div className="relative flex justify-center text-xs" style={{ color: 'var(--text-muted)' }}><span className="px-2" style={{ background: 'var(--bg-primary)' }}>or</span></div>
       </div>
 
-      <button disabled={demoLoading} className="btn-ghost w-full text-xs" onClick={handleDemo}>
+      <button disabled={demoLoading} className="btn-ghost w-full justify-center" onClick={handleDemo}>
         {demoLoading ? 'Setting up demo...' : 'Explore demo (no passphrase needed)'}
       </button>
 
       <div className="mt-8 pt-5 border-t text-center" style={{ borderColor: 'var(--border-primary)' }}>
-        <button onClick={handleReset} className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+        <button onClick={handleReset} className="text-[10px] transition-colors" style={{ color: 'var(--text-muted)' }} onMouseOver={e => (e.target as HTMLElement).style.color = 'var(--text-secondary)'} onMouseOut={e => (e.target as HTMLElement).style.color = 'var(--text-muted)'}>
           Lost passphrase? Reset workspace
         </button>
       </div>

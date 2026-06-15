@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Spinner } from './shared/Spinner';
 import { db } from '../services/db';
-import { generateId, nowISO } from '../services/db';
 
 const ALL_TAGS = ['platformer', 'puzzle', 'rpg', 'shooter', 'racing', 'strategy', 'action', 'adventure', 'simulation', 'horror', 'retro'];
 
@@ -36,7 +35,7 @@ export default function Gallery() {
             <span className="text-sm font-medium text-white">Foundry</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link to="/setup" className="btn-ghost !py-1.5 !px-3 !text-xs">Get Started</Link>
+            <Link to="/setup" className="btn-secondary btn-sm">Get Started</Link>
           </div>
         </div>
       </nav>
@@ -55,7 +54,7 @@ export default function Gallery() {
           <div className="flex gap-1.5 flex-wrap">
             <button className="rounded px-3 py-1.5 text-[10px] font-medium transition-all" style={{ background: !selectedTag ? 'var(--accent)' : 'var(--bg-tertiary)', color: !selectedTag ? 'white' : 'var(--text-muted)' }} onClick={() => setSelectedTag(null)}>All</button>
             {ALL_TAGS.map((tag) => (
-              <button key={tag} className="rounded px-3 py-1.5 text-[10px] font-medium capitalize transition-all" style={{ background: selectedTag === tag ? 'var(--accent)' : 'var(--bg-tertiary)', color: selectedTag === tag ? 'white' : 'var(--text-muted)' }} onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}>{tag}</button>
+              <button key={tag} className="rounded px-3 py-1.5 text-[10px] font-medium capitalize transition-all hover:text-white" style={{ background: selectedTag === tag ? 'var(--accent)' : 'var(--bg-tertiary)', color: selectedTag === tag ? 'white' : 'var(--text-muted)' }} onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}>{tag}</button>
             ))}
           </div>
         </div>
@@ -63,7 +62,10 @@ export default function Gallery() {
         {loading ? (
           <div className="flex h-64 items-center justify-center"><Spinner size="lg" /></div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20" style={{ border: '1px dashed var(--border-primary)', borderRadius: '8px' }}>
+          <div className="flex flex-col items-center justify-center py-20 animate-fadeIn" style={{ border: '1px dashed var(--border-primary)', borderRadius: '8px' }}>
+            <div className="mb-4 flex items-center justify-center w-12 h-12 rounded-full" style={{ background: 'var(--bg-tertiary)' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
+            </div>
             <p className="text-sm font-medium text-white mb-1">{search ? 'No matching projects' : 'No projects yet'}</p>
             <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{search ? 'Try a different search' : 'Create your first project to see it here'}</p>
           </div>
@@ -72,15 +74,15 @@ export default function Gallery() {
             {filtered.map((project) => (
               <div key={project.id} className="card cursor-pointer" onClick={() => handleOpen(project.id)}>
                 <div className="relative aspect-video rounded mb-3 flex items-center justify-center" style={{ background: 'var(--bg-tertiary)' }}>
-                  <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Preview</span>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5"><polygon points="5 3 19 12 5 21 5 3" /></svg>
                 </div>
                 <h3 className="text-sm font-medium text-white truncate mb-1">{project.name}</h3>
                 {project.description && <p className="text-xs mb-3 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{project.description}</p>}
                 <div className="flex items-center justify-between">
                   <div className="flex gap-1 flex-wrap">
-                    {project.gameType && <span className="text-[10px] capitalize" style={{ color: 'var(--text-muted)' }}>{project.gameType}</span>}
+                    {project.gameType && <span className="tag capitalize">{project.gameType}</span>}
                   </div>
-                  <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{new Date(project.updatedAt).toLocaleDateString()}</span>
+                  <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{new Date(project.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                 </div>
               </div>
             ))}

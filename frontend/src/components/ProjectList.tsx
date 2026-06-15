@@ -47,11 +47,10 @@ export default function ProjectList() {
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
       {isDemo && (
-        <div className="flex items-center justify-between px-6 py-2 text-xs" style={{ background: 'var(--accent-subtle)', borderBottom: '1px solid var(--border-primary)' }}>
+        <div className="flex items-center justify-between px-6 py-2 text-xs animate-fadeInDown" style={{ background: 'var(--accent-subtle)', borderBottom: '1px solid var(--border-primary)' }}>
           <span style={{ color: 'var(--accent)' }}>Demo mode — changes are not saved permanently.</span>
           <button
-            className="rounded px-3 py-1 text-[10px] font-medium text-white"
-            style={{ background: 'var(--accent)' }}
+            className="btn-primary btn-xs"
             onClick={() => { dispatch(logout()); navigate('/'); }}
           >
             Exit demo
@@ -66,7 +65,7 @@ export default function ProjectList() {
               {items.length} project{items.length !== 1 ? 's' : ''}
             </p>
           </div>
-          <button className="btn-primary flex items-center gap-1.5 text-xs" onClick={() => setShowNew(true)}>
+          <button className="btn-primary" onClick={() => setShowNew(true)}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginTop: -1 }}><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
             New project
           </button>
@@ -94,11 +93,14 @@ export default function ProjectList() {
         </div>
 
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20" style={{ border: '1px dashed var(--border-primary)', borderRadius: '8px' }}>
+          <div className="flex flex-col items-center justify-center py-20 animate-fadeIn" style={{ border: '1px dashed var(--border-primary)', borderRadius: '8px' }}>
+            <div className="mb-4 flex items-center justify-center w-12 h-12 rounded-full" style={{ background: 'var(--bg-tertiary)' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>
+            </div>
             <h3 className="text-sm font-medium text-white mb-1">{search ? 'No matching projects' : 'No projects yet'}</h3>
             <p className="text-xs mb-5" style={{ color: 'var(--text-secondary)' }}>{search ? 'Try a different search' : 'Create your first game project'}</p>
             {!search && (
-              <button className="btn-primary text-xs" onClick={() => setShowNew(true)}>Create project</button>
+              <button className="btn-primary" onClick={() => setShowNew(true)}>Create project</button>
             )}
           </div>
         ) : (
@@ -111,24 +113,22 @@ export default function ProjectList() {
               >
                 <div className="mb-3 flex items-start justify-between">
                   <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{project.type}</span>
-                  <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                    {project.isPublic ? 'Public' : 'Private'}
-                  </span>
+                  <span className="tag">{project.isPublic ? 'Public' : 'Private'}</span>
                 </div>
                 <h3 className="text-sm font-medium text-white mb-1 truncate">{project.name}</h3>
                 {project.description && (
                   <p className="text-xs mb-3 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{project.description}</p>
                 )}
                 <div className="flex items-center justify-between">
-                  <div className="flex gap-2 text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                    {project.tags?.slice(0, 2).map((tag) => <span key={tag}>{tag}</span>)}
+                  <div className="flex gap-2">
+                    {project.tags?.slice(0, 2).map((tag) => <span key={tag} className="tag">{tag}</span>)}
                   </div>
                   <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                    {new Date(project.updatedAt).toLocaleDateString()}
+                    {new Date(project.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                   </span>
                 </div>
                 <button
-                  className="mt-3 text-[10px]"
+                  className="mt-3 text-[10px] transition-colors"
                   style={{ color: 'var(--danger)' }}
                   onClick={(e) => { e.stopPropagation(); if (confirm('Delete this project?')) dispatch(deleteProject(project.id)); }}
                 >
@@ -141,7 +141,7 @@ export default function ProjectList() {
       </div>
 
       {showNew && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowNew(false)}>
+        <div className="overlay flex items-center justify-center p-4" onClick={() => setShowNew(false)}>
           <div className="w-full max-w-md animate-scaleIn" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)', borderRadius: '8px' }} onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b px-5 py-3.5" style={{ borderColor: 'var(--border-primary)' }}>
               <h2 className="text-sm font-medium text-white">New project</h2>
@@ -165,9 +165,7 @@ export default function ProjectList() {
                     <button
                       key={type}
                       type="button"
-                      className={`px-3 py-1.5 text-[10px] rounded transition-colors ${
-                        gameType === type ? 'text-white' : ''
-                      }`}
+                      className="px-3 py-1.5 text-[10px] rounded transition-all"
                       style={{
                         background: gameType === type ? 'var(--accent)' : 'var(--bg-tertiary)',
                         color: gameType === type ? 'white' : 'var(--text-muted)',
@@ -180,8 +178,8 @@ export default function ProjectList() {
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" className="btn-ghost text-xs" onClick={() => setShowNew(false)}>Cancel</button>
-                <button type="submit" className="btn-primary text-xs">Create project</button>
+                <button type="button" className="btn-ghost" onClick={() => setShowNew(false)}>Cancel</button>
+                <button type="submit" className="btn-primary">Create project</button>
               </div>
             </form>
           </div>
